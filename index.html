@@ -6,19 +6,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; font-family: Arial, sans-serif; }
 
 body {
   margin: 0;
   min-height: 100vh;
+  background: #1e1e1e;
   display: flex;
   justify-content: center;
   align-items: flex-start;
   padding-top: 60px;
-  background: #1e1e1e;
-  font-family: Arial, sans-serif;
 }
 
 .container {
@@ -27,9 +24,8 @@ body {
   background: #2a2a2a;
   padding: 25px;
   border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   color: #fff;
-  position: relative;
 }
 
 h2 {
@@ -37,70 +33,68 @@ h2 {
   margin-bottom: 20px;
 }
 
-input {
+input, button {
   width: 100%;
-  height: 48px;
+  height: 46px;
   margin-bottom: 12px;
-  padding: 12px;
+  padding: 10px;
   border-radius: 8px;
   border: 1px solid #444;
   background: #1f1f1f;
   color: #fff;
-  font-size: 16px;
+  font-size: 15px;
+}
+
+input:focus {
+  outline: none;
+  border-color: #4a90e2;
 }
 
 button {
-  width: 100%;
-  height: 50px;
-  border: none;
-  border-radius: 8px;
   background: linear-gradient(135deg, #4a90e2, #357abd);
-  color: #fff;
-  font-size: 16px;
-  font-weight: bold;
+  border: none;
   cursor: pointer;
+  font-weight: bold;
 }
 
-button:active {
-  transform: scale(0.98);
-}
+button:hover { opacity: 0.9; }
 
 #resultado {
-  margin-top: 15px;
+  margin-top: 12px;
+  background: #1f1f1f;
   padding: 12px;
   border-radius: 8px;
-  background: #1f1f1f;
-  display: none;
   font-size: 14px;
 }
 
-/* Lista autocomplete */
+#map {
+  width: 100%;
+  height: 220px;
+  margin-top: 12px;
+  border-radius: 10px;
+  overflow: hidden;
+  display: none;
+}
+
+/* Lista de sugestões */
 .sugestoes {
   position: absolute;
-  background: #ffffff;        /* FUNDO BRANCO */
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  background: #1f1f1f;
+  border: 1px solid #444;
+  border-radius: 8px;
   z-index: 9999;
-  overflow: hidden;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  display: none;
 }
 
 .sugestoes div {
   padding: 10px;
   cursor: pointer;
-  color: #111;                /* TEXTO ESCURO */
-  font-size: 14px;
-  border-bottom: 1px solid #eee;
-}
-
-.sugestoes div:last-child {
-  border-bottom: none;
+  color: #fff;
 }
 
 .sugestoes div:hover {
-  background: #f2f2f2;        /* HOVER CLARO */
+  background: #333;
 }
-
 </style>
 </head>
 
@@ -112,27 +106,86 @@ button:active {
   <input id="origem" placeholder="Endereço de origem">
   <input id="destino" placeholder="Endereço de destino">
   <input id="kmLitro" type="number" placeholder="Km por litro">
-  <input id="preco" type="number" step="0.01" placeholder="Preço da gasolina">
+  <input id="precoGasolina" type="number" step="0.01" placeholder="Preço da gasolina">
 
   <button onclick="calcular()">Calcular</button>
 
   <div id="resultado"></div>
+  <div id="map"></div>
 </div>
 
 <script>
-function calcular() {
-  const origem = document.getElementById("origem").value;
-  const destino = document.getElementById("destino").value;
-  const kmPorLitro = parseFloat(document.getElementById("kmLitro").value);
-  const precoGasolina = parseFloat(document.getElementById("precoGasolina").value);
-  const resultado = document.getElementById("resultado");
+let autocompleteService;
+let map, directionsService, directionsRenderer;
 
-  if (!origem || !destino || !kmPorLitro || !precoGasolina) {
+function initAutocomplete() {
+  autocompleteService = new google.maps.places.AutocompleteService();
+  configurarCampo("origem");
+  configurarCampo("destino");
+
+  directionsService = new google.maps.DirectionsService();
+  directionsRenderer = new google.maps.DirectionsRenderer({ suppressMarkers: false });
+}
+
+function configurarCampo(id) {
+  const input = document.getElementById(id);
+  const lista = document.createElement("div");
+  lista.className = "sugestoes";
+  document.body.appendChild(lista);
+
+  input.addEventListener("input", () => {
+    const valor = input.value.trim();
+    if (valor.length < 3) {
+      lista.style.display = "none";
+      return;
+    }
+
+    autocompleteService.getPlacePredictions(
+      {
+        input: valor,
+        componentRestrictions: { country: "br" }
+      },
+      (predictions, status) => {
+        lista.innerHTML = "";
+        if (!predictions || status !== "OK") {
+          lista.style.display = "none";
+          return;
+        }
+
+        predictions.forEach(p => {
+          const item = document.createElement("div");
+          item.textContent = p.description;
+          item.onclick = () => {
+            input.value = p.description;
+            lista.style.display = "none";
+          };
+          lista.appendChild(item);
+        });
+
+        const rect = input.getBoundingClientRect();
+        lista.style.width = rect.width + "px";
+        lista.style.left = rect.left + "px";
+        lista.style.top = rect.bottom + window.scrollY + "px";
+        lista.style.display = "block";
+      }
+    );
+  });
+
+  document.addEventListener("click", e => {
+    if (e.target !== input) lista.style.display = "none";
+  });
+}
+
+function calcular() {
+  const origem = origemInput.value;
+  const destino = destinoInput.value;
+  const kmLitro = parseFloat(kmLitroInput.value);
+  const preco = parseFloat(precoGasolinaInput.value);
+
+  if (!origem || !destino || !kmLitro || !preco) {
     resultado.innerHTML = "⚠️ Preencha todos os campos.";
     return;
   }
-
-  const directionsService = new google.maps.DirectionsService();
 
   directionsService.route(
     {
@@ -146,35 +199,45 @@ function calcular() {
         return;
       }
 
-      const route = response.routes[0].legs[0];
-
-      const distanciaKm = route.distance.value / 1000;
-      const duracaoTexto = route.duration.text;
-      const duracaoSegundos = route.duration.value;
-
-      const consumo = distanciaKm / kmPorLitro;
-      const custo = consumo * precoGasolina;
+      const rota = response.routes[0].legs[0];
+      const distanciaKm = rota.distance.value / 1000;
+      const tempo = rota.duration.text;
+      const consumo = distanciaKm / kmLitro;
+      const custo = consumo * preco;
 
       resultado.innerHTML = `
-        <div style="text-align:left">
-          📍 <b>Distância:</b> ${distanciaKm.toFixed(2)} km<br>
-          ⏱ <b>Tempo estimado:</b> ${duracaoTexto}<br>
-          ⛽ <b>Consumo:</b> ${consumo.toFixed(2)} L<br>
-          💰 <b>Custo estimado:</b> R$ ${custo.toFixed(2)}
-        </div>
+        📍 <b>Distância:</b> ${distanciaKm.toFixed(2)} km<br>
+        ⏱ <b>Tempo estimado:</b> ${tempo}<br>
+        ⛽ <b>Consumo:</b> ${consumo.toFixed(2)} L<br>
+        💰 <b>Custo estimado:</b> R$ ${custo.toFixed(2)}
       `;
+
+      if (!map) {
+        map = new google.maps.Map(document.getElementById("map"), {
+          zoom: 7,
+          center: rota.start_location
+        });
+        directionsRenderer.setMap(map);
+      }
+
+      document.getElementById("map").style.display = "block";
+      directionsRenderer.setDirections(response);
     }
   );
 }
+
+// atalhos
+const origemInput = document.getElementById("origem");
+const destinoInput = document.getElementById("destino");
+const kmLitroInput = document.getElementById("kmLitro");
+const precoGasolinaInput = document.getElementById("precoGasolina");
+const resultado = document.getElementById("resultado");
 </script>
 
-
 <script
-src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDiYWC1UozNM6xqegQg__CQvNA3FXgFbEA&libraries=places&callback=initMaps"
-async defer>
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDiYWC1UozNM6xqegQg__CQvNA3FXgFbEA&libraries=places&callback=initAutocomplete"
+  async defer>
 </script>
 
 </body>
 </html>
-
-
