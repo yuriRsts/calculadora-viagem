@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Calculadora de Viagem</title>
 
 <link rel="manifest" href="manifest.json">
@@ -32,10 +32,7 @@ body {
   box-shadow: 0 10px 30px rgba(0,0,0,.5);
 }
 
-h2 {
-  text-align: center;
-  margin-bottom: 15px;
-}
+h2 { text-align: center; }
 
 input, button {
   width: 100%;
@@ -46,23 +43,19 @@ input, button {
   background: #1f1f1f;
   color: #fff;
   padding: 0 12px;
-  font-size: 15px;
 }
 
 button {
-  background: linear-gradient(135deg, #4a90e2, #357abd);
+  background: linear-gradient(135deg,#4a90e2,#357abd);
   border: none;
-  cursor: pointer;
   font-weight: bold;
+  cursor: pointer;
 }
-
-button:hover { opacity: .9; }
 
 .resultado {
   background: #1b1b1b;
-  border-radius: 8px;
   padding: 10px;
-  margin-top: 10px;
+  border-radius: 8px;
   font-size: 14px;
 }
 
@@ -71,11 +64,6 @@ button:hover { opacity: .9; }
   height: 220px;
   border-radius: 10px;
   margin-top: 10px;
-  overflow: hidden;
-}
-
-.links button {
-  margin-top: 8px;
 }
 </style>
 </head>
@@ -88,55 +76,57 @@ button:hover { opacity: .9; }
   <input id="destino" placeholder="Endereço de destino">
   <input id="kmLitro" type="number" placeholder="Km por litro">
   <input id="precoGasolina" type="number" step="0.01" placeholder="Preço da gasolina">
-  <input id="pedagioManual" type="number" step="0.01" placeholder="Pedágio informado (opcional)">
+  <input id="pedagio" type="number" step="0.01" placeholder="Pedágio (opcional)">
 
   <button onclick="calcular()">Calcular</button>
 
+  <button id="btnInstall" style="display:none;">📲 Instalar App</button>
+
   <div id="resultado" class="resultado"></div>
-
-  <div class="links" id="links"></div>
-
   <div id="map"></div>
-
   <div id="historico" class="resultado"></div>
 </div>
 
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDiYWC1UozNM6xqegQg__CQvNA3FXgFbEA&libraries=places"></script>
 
 <script>
-let service, directionsService, directionsRenderer, map;
+let map, directionsService, directionsRenderer, service;
+let deferredPrompt = null;
+
+// INPUTS CORRETOS
+const origemInput = document.getElementById("origem");
+const destinoInput = document.getElementById("destino");
+const kmLitroInput = document.getElementById("kmLitro");
+const precoGasolinaInput = document.getElementById("precoGasolina");
+const pedagioInput = document.getElementById("pedagio");
 
 function init() {
   service = new google.maps.places.AutocompleteService();
-  configurarAutocomplete("origem");
-  configurarAutocomplete("destino");
+
+  configurarAutocomplete(origemInput);
+  configurarAutocomplete(destinoInput);
 
   directionsService = new google.maps.DirectionsService();
   directionsRenderer = new google.maps.DirectionsRenderer();
 
   map = new google.maps.Map(document.getElementById("map"), {
-    center: { lat: -23.55, lng: -46.63 },
     zoom: 6,
+    center: { lat: -23.55, lng: -46.63 }
   });
 
   directionsRenderer.setMap(map);
-
   restaurarUltimaRota();
   renderizarHistorico();
 }
 
-function configurarAutocomplete(id) {
-  const input = document.getElementById(id);
+function configurarAutocomplete(input) {
   const lista = document.createElement("div");
-
   lista.style.position = "absolute";
   lista.style.background = "#1f1f1f";
   lista.style.color = "#fff";
   lista.style.border = "1px solid #444";
-  lista.style.borderRadius = "6px";
   lista.style.zIndex = "9999";
   lista.style.display = "none";
-
   document.body.appendChild(lista);
 
   input.addEventListener("input", () => {
@@ -151,32 +141,24 @@ function configurarAutocomplete(id) {
     lista.style.left = rect.left + "px";
     lista.style.top = rect.bottom + window.scrollY + "px";
 
-    service.getPlacePredictions({
-      input: valor,
-      componentRestrictions: { country: "br" }
-    }, (predictions) => {
-      if (!predictions) return;
-
-      lista.innerHTML = "";
-      predictions.forEach(p => {
-        const item = document.createElement("div");
-        item.textContent = p.description;
-        item.style.padding = "8px";
-        item.style.cursor = "pointer";
-
-        item.onclick = () => {
-          input.value = p.description;
-          lista.style.display = "none";
-        };
-
-        lista.appendChild(item);
-      });
-      lista.style.display = "block";
-    });
-  });
-
-  document.addEventListener("click", e => {
-    if (e.target !== input) lista.style.display = "none";
+    service.getPlacePredictions(
+      { input: valor, componentRestrictions: { country: "br" } },
+      (predictions) => {
+        if (!predictions) return;
+        lista.innerHTML = "";
+        predictions.forEach(p => {
+          const item = document.createElement("div");
+          item.textContent = p.description;
+          item.style.padding = "8px";
+          item.onclick = () => {
+            input.value = p.description;
+            lista.style.display = "none";
+          };
+          lista.appendChild(item);
+        });
+        lista.style.display = "block";
+      }
+    );
   });
 }
 
@@ -185,104 +167,93 @@ function calcular() {
   const destino = destinoInput.value;
   const kmLitro = parseFloat(kmLitroInput.value);
   const preco = parseFloat(precoGasolinaInput.value);
-  const pedagioManual = parseFloat(pedagioManualInput.value) || 0;
+  const pedagio = parseFloat(pedagioInput.value) || 0;
 
   if (!origem || !destino || !kmLitro || !preco) {
     alert("Preencha todos os campos obrigatórios.");
     return;
   }
 
-  directionsService.route({
-    origin: origem,
-    destination: destino,
-    travelMode: "DRIVING"
-  }, (result, status) => {
-    if (status !== "OK") {
-      alert("Erro ao calcular rota.");
-      return;
+  directionsService.route(
+    { origin: origem, destination: destino, travelMode: "DRIVING" },
+    (result, status) => {
+      if (status !== "OK") return alert("Erro ao calcular rota.");
+
+      directionsRenderer.setDirections(result);
+      const leg = result.routes[0].legs[0];
+
+      const km = leg.distance.value / 1000;
+      const tempo = leg.duration.text;
+      const combustivel = (km / kmLitro) * preco;
+      const pedagioEstimado = km * 0.15;
+      const total = combustivel + pedagioEstimado + pedagio;
+
+      resultado.innerHTML = `
+        📏 ${km.toFixed(2)} km<br>
+        ⏱ ${tempo}<br>
+        ⛽ R$ ${combustivel.toFixed(2)}<br>
+        🛣 Pedágio estimado: R$ ${pedagioEstimado.toFixed(2)}<br>
+        💰 <b>Total: R$ ${total.toFixed(2)}</b>
+      `;
+
+      salvarUltimaRota();
+      salvarHistorico(origem, destino, km, total);
+      renderizarHistorico();
     }
-
-    directionsRenderer.setDirections(result);
-
-    const leg = result.routes[0].legs[0];
-    const distanciaKm = leg.distance.value / 1000;
-    const tempo = leg.duration.text;
-
-    const litros = distanciaKm / kmLitro;
-    const custoCombustivel = litros * preco;
-
-    const pedagioEstimado = distanciaKm * 0.15;
-    const total = custoCombustivel + pedagioEstimado + pedagioManual;
-
-    resultado.innerHTML = `
-      📏 Distância: ${distanciaKm.toFixed(2)} km<br>
-      ⏱ Tempo estimado: ${tempo}<br>
-      ⛽ Combustível: R$ ${custoCombustivel.toFixed(2)}<br>
-      🛣 Pedágio estimado: R$ ${pedagioEstimado.toFixed(2)}<br>
-      🧾 Pedágio informado: R$ ${pedagioManual.toFixed(2)}<br>
-      💰 <b>Total estimado: R$ ${total.toFixed(2)}</b>
-    `;
-
-    links.innerHTML = `
-      <button onclick="window.open('https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origem)}&destination=${encodeURIComponent(destino)}')">
-        🗺 Abrir no Google Maps
-      </button>
-      <button onclick="window.open('https://waze.com/ul?ll=${leg.end_location.lat()},${leg.end_location.lng()}&navigate=yes')">
-        🚗 Abrir no Waze
-      </button>
-    `;
-
-    salvarUltimaRota(origem, destino, kmLitro, preco, pedagioManual);
-    salvarHistorico(origem, destino, distanciaKm, total);
-    renderizarHistorico();
-  });
+  );
 }
 
-function salvarUltimaRota(...dados) {
-  localStorage.setItem("ultimaRota", JSON.stringify(dados));
+// LOCALSTORAGE
+function salvarUltimaRota() {
+  localStorage.setItem("ultimaRota", JSON.stringify({
+    origem: origemInput.value,
+    destino: destinoInput.value,
+    km: kmLitroInput.value,
+    preco: precoGasolinaInput.value,
+    pedagio: pedagioInput.value
+  }));
 }
 
 function restaurarUltimaRota() {
-  const dados = JSON.parse(localStorage.getItem("ultimaRota"));
-  if (!dados) return;
-
-  origem.value = dados[0];
-  destino.value = dados[1];
-  kmLitro.value = dados[2];
-  precoGasolina.value = dados[3];
-  pedagioManual.value = dados[4];
+  const r = JSON.parse(localStorage.getItem("ultimaRota"));
+  if (!r) return;
+  origemInput.value = r.origem;
+  destinoInput.value = r.destino;
+  kmLitroInput.value = r.km;
+  precoGasolinaInput.value = r.preco;
+  pedagioInput.value = r.pedagio;
 }
 
-function salvarHistorico(origem, destino, distancia, total) {
-  const hist = JSON.parse(localStorage.getItem("historico")) || [];
-  hist.unshift({ origem, destino, distancia, total, data: new Date().toLocaleString() });
-  localStorage.setItem("historico", JSON.stringify(hist.slice(0, 5)));
+function salvarHistorico(o,d,k,t) {
+  const h = JSON.parse(localStorage.getItem("historico")) || [];
+  h.unshift({ o,d,k,t,data:new Date().toLocaleString() });
+  localStorage.setItem("historico", JSON.stringify(h.slice(0,5)));
 }
 
 function renderizarHistorico() {
-  const hist = JSON.parse(localStorage.getItem("historico")) || [];
-  if (!hist.length) return;
-
-  historico.innerHTML = "<b>🕘 Histórico</b><br><br>" +
-    hist.map(h => `
-      📍 ${h.origem} → ${h.destino}<br>
-      📏 ${h.distancia.toFixed(1)} km | 💰 R$ ${h.total.toFixed(2)}<br>
-      🕓 ${h.data}<br><br>
-    `).join("");
+  const h = JSON.parse(localStorage.getItem("historico")) || [];
+  historico.innerHTML = h.length ? "<b>🕘 Histórico</b><br><br>" +
+    h.map(i=>`${i.o} → ${i.d}<br>R$ ${i.t.toFixed(2)}<br><br>`).join("") : "";
 }
 
-window.onload = init;
+// PWA INSTALL
+window.addEventListener("beforeinstallprompt", e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  btnInstall.style.display = "block";
+});
 
-// PWA
+btnInstall.onclick = async () => {
+  deferredPrompt.prompt();
+  deferredPrompt = null;
+  btnInstall.style.display = "none";
+};
+
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js");
 }
 
-const origemInput = document.getElementById("origem");
-const destinoInput = document.getElementById("destino");
-const kmLitroInput = document.getElementById("kmLitro");
-const precoGasolinaInput = document.getElementById("precoGasolina");
+window.onload = init;
 </script>
-
 </body>
 </html>
