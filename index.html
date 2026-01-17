@@ -3,71 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <title>Calculadora de Viagem</title>
+
   <style>
-    <style>
-  body {
-    font-family: Arial, sans-serif;
-    background: #f2f4f8;
-    margin: 0;
-    padding: 0;
-  }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f4f8;
+      margin: 0;
+      padding: 0;
+    }
 
-  .container {
-    max-width: 420px;
-    margin: 60px auto;
-    background: #ffffff;
-    padding: 25px;
-    border-radius: 10px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-  }
+    .container {
+      max-width: 420px;
+      margin: 60px auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
 
-  h2 {
-    text-align: center;
-    margin-bottom: 20px;
-  }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
 
-  input {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 12px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    font-size: 14px;
-  }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
 
-  input:focus {
-    outline: none;
-    border-color: #4a90e2;
-  }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #4a90e2;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
 
-  button {
-    width: 100%;
-    padding: 12px;
-    background: #4a90e2;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
-    cursor: pointer;
-  }
+    button:hover {
+      background: #357abd;
+    }
 
-  button:hover {
-    background: #357ab8;
-  }
-
-  #resultado {
-    margin-top: 20px;
-    background: #f7f9fc;
-    padding: 15px;
-    border-radius: 6px;
-    font-weight: bold;
-    font-size: 14px;
-  }
-</style>
-
+    #resultado {
+      margin-top: 18px;
+      padding: 12px;
+      background: #f7f9fc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+  </style>
 </head>
-
- <body>
+<body>
 
   <div class="container">
     <h2>Calculadora de Viagem</h2>
@@ -82,19 +75,28 @@
     <div id="resultado"></div>
   </div>
 
-</body>
-
-
-
   <script>
     function calcular() {
-      const origem = document.getElementById("origem").value;
-      const destino = document.getElementById("destino").value;
+      const origem = document.getElementById("origem").value.trim();
+      const destino = document.getElementById("destino").value.trim();
       const kmLitro = parseFloat(document.getElementById("kmLitro").value);
       const preco = parseFloat(document.getElementById("preco").value);
+      const resultado = document.getElementById("resultado");
 
-      if (!origem || !destino || !kmLitro || !preco) {
-        alert("Preencha todos os campos");
+      resultado.innerHTML = "";
+
+      if (!origem || !destino) {
+        alert("Informe origem e destino.");
+        return;
+      }
+
+      if (isNaN(kmLitro) || kmLitro <= 0) {
+        alert("Km por litro inválido.");
+        return;
+      }
+
+      if (isNaN(preco) || preco <= 0) {
+        alert("Preço da gasolina inválido.");
         return;
       }
 
@@ -104,33 +106,38 @@
         {
           origins: [origem],
           destinations: [destino],
-          travelMode: 'DRIVING',
+          travelMode: "DRIVING",
         },
         (response, status) => {
           if (status !== "OK") {
-            alert("Erro ao calcular distância");
+            resultado.innerHTML = "❌ Erro ao calcular a rota.";
             return;
           }
 
-          const distanciaMetros =
-            response.rows[0].elements[0].distance.value;
+          const element = response.rows[0].elements[0];
 
-          const distanciaKm = distanciaMetros / 1000;
+          if (element.status !== "OK") {
+            resultado.innerHTML = "❌ Rota não encontrada.";
+            return;
+          }
+
+          const distanciaKm = element.distance.value / 1000;
           const litros = distanciaKm / kmLitro;
           const custo = litros * preco;
 
-          document.getElementById("resultado").innerHTML =
-            `Distância: ${distanciaKm.toFixed(2)} km<br>
-             Consumo: ${litros.toFixed(2)} litros<br>
-             Custo: R$ ${custo.toFixed(2)}`;
+          resultado.innerHTML = `
+            🚗 <strong>Distância:</strong> ${distanciaKm.toFixed(2)} km<br>
+            ⛽ <strong>Consumo:</strong> ${litros.toFixed(2)} litros<br>
+            💰 <strong>Custo:</strong> R$ ${custo.toFixed(2)}
+          `;
         }
       );
     }
   </script>
+
   <script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDiYWC1UozNM6xqegQg__CQvNA3FXgFbEA">
+    src="https://maps.googleapis.com/maps/api/js?AIzaSyDiYWC1UozNM6xqegQg__CQvNA3FXgFbEA&loading=async">
   </script>
 
 </body>
 </html>
-
