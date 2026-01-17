@@ -115,75 +115,16 @@ button:hover { opacity: 0.9; }
 </div>
 
 <script>
-let autocompleteService;
-let map, directionsService, directionsRenderer;
-
-function initAutocomplete() {
-  autocompleteService = new google.maps.places.AutocompleteService();
-  configurarCampo("origem");
-  configurarCampo("destino");
-
-  directionsService = new google.maps.DirectionsService();
-  directionsRenderer = new google.maps.DirectionsRenderer({ suppressMarkers: false });
-}
-
-function configurarCampo(id) {
-  const input = document.getElementById(id);
-  const lista = document.createElement("div");
-  lista.className = "sugestoes";
-  document.body.appendChild(lista);
-
-  input.addEventListener("input", () => {
-    const valor = input.value.trim();
-    if (valor.length < 3) {
-      lista.style.display = "none";
-      return;
-    }
-
-    autocompleteService.getPlacePredictions(
-      {
-        input: valor,
-        componentRestrictions: { country: "br" }
-      },
-      (predictions, status) => {
-        lista.innerHTML = "";
-        if (!predictions || status !== "OK") {
-          lista.style.display = "none";
-          return;
-        }
-
-        predictions.forEach(p => {
-          const item = document.createElement("div");
-          item.textContent = p.description;
-          item.onclick = () => {
-            input.value = p.description;
-            lista.style.display = "none";
-          };
-          lista.appendChild(item);
-        });
-
-        const rect = input.getBoundingClientRect();
-        lista.style.width = rect.width + "px";
-        lista.style.left = rect.left + "px";
-        lista.style.top = rect.bottom + window.scrollY + "px";
-        lista.style.display = "block";
-      }
-    );
-  });
-
-  document.addEventListener("click", e => {
-    if (e.target !== input) lista.style.display = "none";
-  });
-}
-
 function calcular() {
-  const origem = origemInput.value;
-  const destino = destinoInput.value;
-  const kmLitro = parseFloat(kmLitroInput.value);
-  const preco = parseFloat(precoGasolinaInput.value);
+  const origem = document.getElementById("origem").value;
+  const destino = document.getElementById("destino").value;
+  const kmLitro = parseFloat(document.getElementById("kmLitro").value);
+  const preco = parseFloat(document.getElementById("precoGasolina").value);
+  const pedagioInformado = parseFloat(document.getElementById("pedagio").value) || 0;
+  const resultado = document.getElementById("resultado");
 
   if (!origem || !destino || !kmLitro || !preco) {
-    resultado.innerHTML = "⚠️ Preencha todos os campos.";
+    resultado.innerHTML = "⚠️ Preencha todos os campos obrigatórios.";
     return;
   }
 
@@ -200,18 +141,32 @@ function calcular() {
       }
 
       const rota = response.routes[0].legs[0];
+
       const distanciaKm = rota.distance.value / 1000;
       const tempo = rota.duration.text;
       const consumo = distanciaKm / kmLitro;
-      const custo = consumo * preco;
+      const custoCombustivel = consumo * preco;
+
+      // 🚧 Detectar pedágio automaticamente
+      let temPedagio = false;
+      rota.steps.forEach(step => {
+        if (step.maneuver === "toll") {
+          temPedagio = true;
+        }
+      });
+
+      const custoTotal = custoCombustivel + pedagioInformado;
 
       resultado.innerHTML = `
+        ${temPedagio ? "🚧 <b>Atenção:</b> Esta rota possui pedágios<br><br>" : ""}
         📍 <b>Distância:</b> ${distanciaKm.toFixed(2)} km<br>
         ⏱ <b>Tempo estimado:</b> ${tempo}<br>
-        ⛽ <b>Consumo:</b> ${consumo.toFixed(2)} L<br>
-        💰 <b>Custo estimado:</b> R$ ${custo.toFixed(2)}
+        ⛽ <b>Combustível:</b> R$ ${custoCombustivel.toFixed(2)}<br>
+        🛣 <b>Pedágios:</b> R$ ${pedagioInformado.toFixed(2)}<br>
+        💰 <b>Total da viagem:</b> R$ ${custoTotal.toFixed(2)}
       `;
 
+      // Mostrar mapa
       if (!map) {
         map = new google.maps.Map(document.getElementById("map"), {
           zoom: 7,
@@ -225,14 +180,8 @@ function calcular() {
     }
   );
 }
-
-// atalhos
-const origemInput = document.getElementById("origem");
-const destinoInput = document.getElementById("destino");
-const kmLitroInput = document.getElementById("kmLitro");
-const precoGasolinaInput = document.getElementById("precoGasolina");
-const resultado = document.getElementById("resultado");
 </script>
+
 
 <script
   src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDiYWC1UozNM6xqegQg__CQvNA3FXgFbEA&libraries=places&callback=initAutocomplete"
@@ -241,3 +190,4 @@ const resultado = document.getElementById("resultado");
 
 </body>
 </html>
+
