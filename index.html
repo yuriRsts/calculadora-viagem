@@ -106,95 +106,82 @@
   </div>
 
   <script>
-    let autocompleteOrigem;
-    let autocompleteDestino;
+let service;
 
-    function initAutocomplete() {
-      const inputOrigem = document.getElementById("origem");
-      const inputDestino = document.getElementById("destino");
+function initAutocomplete() {
+  service = new google.maps.places.AutocompleteService();
+  configurarCampo("origem");
+  configurarCampo("destino");
+}
 
-      const options = {
-        types: ["geocode"],
+function configurarCampo(id) {
+  const input = document.getElementById(id);
+  const lista = document.createElement("div");
+
+  lista.style.position = "absolute";
+  lista.style.background = "#1b1b1b";
+  lista.style.border = "1px solid #444";
+  lista.style.borderRadius = "6px";
+  lista.style.zIndex = "9999";
+  lista.style.width = input.offsetWidth + "px";
+  lista.style.display = "none";
+
+  input.parentNode.appendChild(lista);
+
+  input.addEventListener("input", () => {
+    const valor = input.value.trim();
+
+    if (valor.length < 3) {
+      lista.style.display = "none";
+      return;
+    }
+
+    service.getPlacePredictions(
+      {
+        input: valor,
         componentRestrictions: { country: "br" },
-        fields: ["place_id", "geometry", "name"]
-      };
+        types: ["geocode"]
+      },
+      (predictions, status) => {
+        lista.innerHTML = "";
 
-      autocompleteOrigem = new google.maps.places.Autocomplete(inputOrigem, options);
-      autocompleteDestino = new google.maps.places.Autocomplete(inputDestino, options);
-
-      limitarAutocomplete(inputOrigem);
-      limitarAutocomplete(inputDestino);
-    }
-
-    // 🔒 Autocomplete só após 3 letras
-    function limitarAutocomplete(input) {
-      input.addEventListener("input", () => {
-        if (input.value.length < 3) {
-          input.setAttribute("autocomplete", "off");
-        } else {
-          input.setAttribute("autocomplete", "on");
+        if (
+          status !== google.maps.places.PlacesServiceStatus.OK ||
+          !predictions
+        ) {
+          lista.style.display = "none";
+          return;
         }
-      });
+
+        predictions.forEach(p => {
+          const item = document.createElement("div");
+          item.textContent = p.description;
+          item.style.padding = "10px";
+          item.style.cursor = "pointer";
+          item.style.borderBottom = "1px solid #333";
+          item.style.color = "#fff";
+
+          item.onclick = () => {
+            input.value = p.description;
+            lista.style.display = "none";
+          };
+
+          lista.appendChild(item);
+        });
+
+        lista.style.display = "block";
+      }
+    );
+  });
+
+  document.addEventListener("click", e => {
+    if (!input.contains(e.target)) {
+      lista.style.display = "none";
     }
+  });
+}
+</script>
 
-    function calcular() {
-      const origem = document.getElementById("origem").value.trim();
-      const destino = document.getElementById("destino").value.trim();
-      const kmLitro = parseFloat(document.getElementById("kmLitro").value);
-      const preco = parseFloat(document.getElementById("preco").value);
-      const resultado = document.getElementById("resultado");
-
-      resultado.innerHTML = "";
-
-      if (!origem || !destino) {
-        alert("Informe origem e destino.");
-        return;
-      }
-
-      if (isNaN(kmLitro) || kmLitro <= 0) {
-        alert("Km por litro inválido.");
-        return;
-      }
-
-      if (isNaN(preco) || preco <= 0) {
-        alert("Preço da gasolina inválido.");
-        return;
-      }
-
-      const service = new google.maps.DistanceMatrixService();
-
-      service.getDistanceMatrix(
-        {
-          origins: [origem],
-          destinations: [destino],
-          travelMode: google.maps.TravelMode.DRIVING,
-        },
-        (response, status) => {
-          if (status !== "OK") {
-            resultado.innerHTML = "❌ Erro ao calcular a rota.";
-            return;
-          }
-
-          const element = response.rows[0].elements[0];
-
-          if (element.status !== "OK") {
-            resultado.innerHTML = "❌ Rota não encontrada.";
-            return;
-          }
-
-          const distanciaKm = element.distance.value / 1000;
-          const litros = distanciaKm / kmLitro;
-          const custo = litros * preco;
-
-          resultado.innerHTML = `
-            🚗 <strong>Distância:</strong> ${distanciaKm.toFixed(2)} km<br>
-            ⛽ <strong>Consumo:</strong> ${litros.toFixed(2)} litros<br>
-            💰 <strong>Custo:</strong> R$ ${custo.toFixed(2)}
-          `;
-        }
-      );
-    }
-  </script>
 
   <script
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDiYWC1UozNM6xqegQg__CQvNA3FXgFbEA&libraries=places&callback=initAutocomplete"
@@ -204,3 +191,4 @@
 
 </body>
 </html>
+
