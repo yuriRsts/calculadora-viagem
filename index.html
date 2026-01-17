@@ -17,7 +17,6 @@ body {
   background: #1e1e1e;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
   padding: 20px;
   color: #fff;
 }
@@ -89,8 +88,8 @@ button {
   <input id="precoGasolina" type="number" step="0.01" placeholder="Preço da gasolina">
 
   <div class="info">
-    🛣️ Pedágio é estimado automaticamente pela distância.<br>
-    (Opcional) Informe abaixo se quiser substituir o valor.
+    🛣️ Pedágio estimado automaticamente pela distância.<br>
+    (Opcional) Informe abaixo para substituir o valor.
   </div>
 
   <input id="pedagioManual" type="number" step="0.01" placeholder="Pedágio manual (opcional)">
@@ -98,14 +97,13 @@ button {
   <button onclick="calcular()">Calcular</button>
 
   <div id="resultado" class="resultado" style="display:none"></div>
-
   <div id="mapa" class="mapa"></div>
 </div>
 
 <script>
 let map, directionsService, directionsRenderer, autocompleteService;
 
-const VALOR_PEDAGIO_POR_KM = 0.12; // <<< AJUSTE AQUI
+const VALOR_PEDAGIO_POR_KM = 0.12; // AJUSTE AQUI
 
 function initMap() {
   map = new google.maps.Map(document.getElementById("mapa"), {
@@ -136,10 +134,7 @@ function configurarAutocomplete(id) {
 
   input.addEventListener("input", () => {
     const valor = input.value.trim();
-    if (valor.length < 3) {
-      lista.style.display = "none";
-      return;
-    }
+    if (valor.length < 3) return;
 
     const rect = input.getBoundingClientRect();
     lista.style.left = rect.left + "px";
@@ -148,7 +143,7 @@ function configurarAutocomplete(id) {
 
     autocompleteService.getPlacePredictions(
       { input: valor, componentRestrictions: { country: "br" } },
-      (predictions) => {
+      predictions => {
         lista.innerHTML = "";
         if (!predictions) return;
 
@@ -157,12 +152,10 @@ function configurarAutocomplete(id) {
           item.textContent = p.description;
           item.style.padding = "10px";
           item.style.cursor = "pointer";
-
           item.onclick = () => {
             input.value = p.description;
             lista.style.display = "none";
           };
-
           lista.appendChild(item);
         });
 
@@ -188,13 +181,8 @@ function calcular() {
     return;
   }
 
-  if (isNaN(kmLitro) || kmLitro <= 0) {
-    alert("Informe um valor válido de km por litro");
-    return;
-  }
-
-  if (isNaN(preco) || preco <= 0) {
-    alert("Informe um valor válido para o preço da gasolina");
+  if (isNaN(kmLitro) || kmLitro <= 0 || isNaN(preco) || preco <= 0) {
+    alert("Preencha corretamente os dados do veículo");
     return;
   }
 
@@ -212,23 +200,22 @@ function calcular() {
       const distanciaKm = rota.distance.value / 1000;
       const duracao = rota.duration.text;
 
-      const custoCombustivel = (distanciaKm / kmLitro) * preco;
-
+      const combustivel = (distanciaKm / kmLitro) * preco;
       const pedagioEstimado = distanciaKm * VALOR_PEDAGIO_POR_KM;
       const pedagioFinal =
         !isNaN(pedagioManual) && pedagioManual > 0
           ? pedagioManual
           : pedagioEstimado;
 
-      const total = custoCombustivel + pedagioFinal;
+      const total = combustivel + pedagioFinal;
 
       document.getElementById("resultado").style.display = "block";
       document.getElementById("resultado").innerHTML = `
         📏 Distância: ${distanciaKm.toFixed(2)} km<br>
-        ⏱️ Tempo estimado: ${duracao}<br>
-        ⛽ Combustível: R$ ${custoCombustivel.toFixed(2)}<br>
+        ⏱️ Tempo: ${duracao}<br>
+        ⛽ Combustível: R$ ${combustivel.toFixed(2)}<br>
         🛣️ Pedágio estimado: R$ ${pedagioEstimado.toFixed(2)}<br>
-        💰 Total da viagem: R$ ${total.toFixed(2)}
+        💰 Total: R$ ${total.toFixed(2)}
       `;
     }
   );
