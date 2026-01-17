@@ -20,9 +20,9 @@ body {
 
 .container {
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
   background: #2a2a2a;
-  padding: 25px;
+  padding: 24px;
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   color: #fff;
@@ -45,10 +45,7 @@ input, button {
   font-size: 15px;
 }
 
-input:focus {
-  outline: none;
-  border-color: #4a90e2;
-}
+input::placeholder { color: #aaa; }
 
 button {
   background: linear-gradient(135deg, #4a90e2, #357abd);
@@ -76,25 +73,28 @@ button:hover { opacity: 0.9; }
   display: none;
 }
 
-/* Lista de sugestões */
+/* AUTOCOMPLETE */
 .sugestoes {
   position: absolute;
-  background: #1f1f1f;
-  border: 1px solid #444;
+  background: #ffffff;
+  border: 1px solid #ccc;
   border-radius: 8px;
   z-index: 9999;
   display: none;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
 }
 
 .sugestoes div {
   padding: 10px;
   cursor: pointer;
-  color: #fff;
+  color: #111;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
 }
 
-.sugestoes div:hover {
-  background: #333;
-}
+.sugestoes div:last-child { border-bottom: none; }
+
+.sugestoes div:hover { background: #f2f2f2; }
 </style>
 </head>
 
@@ -107,6 +107,7 @@ button:hover { opacity: 0.9; }
   <input id="destino" placeholder="Endereço de destino">
   <input id="kmLitro" type="number" placeholder="Km por litro">
   <input id="precoGasolina" type="number" step="0.01" placeholder="Preço da gasolina">
+  <input id="pedagio" type="number" step="0.01" placeholder="Valor total de pedágios (opcional)">
 
   <button onclick="calcular()">Calcular</button>
 
@@ -115,25 +116,81 @@ button:hover { opacity: 0.9; }
 </div>
 
 <script>
+let autocompleteService;
+let directionsService;
+let directionsRenderer;
+let map;
+
+function initMaps() {
+  autocompleteService = new google.maps.places.AutocompleteService();
+  directionsService = new google.maps.DirectionsService();
+  directionsRenderer = new google.maps.DirectionsRenderer();
+
+  configurarCampo("origem");
+  configurarCampo("destino");
+}
+
+function configurarCampo(id) {
+  const input = document.getElementById(id);
+  const lista = document.createElement("div");
+  lista.className = "sugestoes";
+  document.body.appendChild(lista);
+
+  input.addEventListener("input", () => {
+    const valor = input.value.trim();
+    if (valor.length < 3) {
+      lista.style.display = "none";
+      return;
+    }
+
+    autocompleteService.getPlacePredictions(
+      { input: valor, componentRestrictions: { country: "br" } },
+      (predictions, status) => {
+        lista.innerHTML = "";
+        if (!predictions || status !== "OK") {
+          lista.style.display = "none";
+          return;
+        }
+
+        predictions.forEach(p => {
+          const item = document.createElement("div");
+          item.textContent = p.description;
+          item.onclick = () => {
+            input.value = p.description;
+            lista.style.display = "none";
+          };
+          lista.appendChild(item);
+        });
+
+        const rect = input.getBoundingClientRect();
+        lista.style.width = rect.width + "px";
+        lista.style.left = rect.left + "px";
+        lista.style.top = rect.bottom + window.scrollY + "px";
+        lista.style.display = "block";
+      }
+    );
+  });
+
+  document.addEventListener("click", e => {
+    if (e.target !== input) lista.style.display = "none";
+  });
+}
+
 function calcular() {
   const origem = document.getElementById("origem").value;
   const destino = document.getElementById("destino").value;
   const kmLitro = parseFloat(document.getElementById("kmLitro").value);
   const preco = parseFloat(document.getElementById("precoGasolina").value);
-  const pedagioInformado = parseFloat(document.getElementById("pedagio").value) || 0;
+  const pedagio = parseFloat(document.getElementById("pedagio").value) || 0;
   const resultado = document.getElementById("resultado");
 
-  if (!origem || !destino || !kmLitro || !preco) {
+  if (!origem || !destino || kmLitro <= 0 || preco <= 0) {
     resultado.innerHTML = "⚠️ Preencha todos os campos obrigatórios.";
     return;
   }
 
   directionsService.route(
-    {
-      origin: origem,
-      destination: destino,
-      travelMode: google.maps.TravelMode.DRIVING
-    },
+    { origin: origem, destination: destino, travelMode: "DRIVING" },
     (response, status) => {
       if (status !== "OK") {
         resultado.innerHTML = "❌ Não foi possível calcular a rota.";
@@ -141,32 +198,27 @@ function calcular() {
       }
 
       const rota = response.routes[0].legs[0];
-
       const distanciaKm = rota.distance.value / 1000;
       const tempo = rota.duration.text;
       const consumo = distanciaKm / kmLitro;
       const custoCombustivel = consumo * preco;
 
-      // 🚧 Detectar pedágio automaticamente
       let temPedagio = false;
       rota.steps.forEach(step => {
-        if (step.maneuver === "toll") {
-          temPedagio = true;
-        }
+        if (step.maneuver === "toll") temPedagio = true;
       });
 
-      const custoTotal = custoCombustivel + pedagioInformado;
+      const total = custoCombustivel + pedagio;
 
       resultado.innerHTML = `
         ${temPedagio ? "🚧 <b>Atenção:</b> Esta rota possui pedágios<br><br>" : ""}
         📍 <b>Distância:</b> ${distanciaKm.toFixed(2)} km<br>
         ⏱ <b>Tempo estimado:</b> ${tempo}<br>
         ⛽ <b>Combustível:</b> R$ ${custoCombustivel.toFixed(2)}<br>
-        🛣 <b>Pedágios:</b> R$ ${pedagioInformado.toFixed(2)}<br>
-        💰 <b>Total da viagem:</b> R$ ${custoTotal.toFixed(2)}
+        🛣 <b>Pedágios:</b> R$ ${pedagio.toFixed(2)}<br>
+        💰 <b>Total da viagem:</b> R$ ${total.toFixed(2)}
       `;
 
-      // Mostrar mapa
       if (!map) {
         map = new google.maps.Map(document.getElementById("map"), {
           zoom: 7,
@@ -182,12 +234,10 @@ function calcular() {
 }
 </script>
 
-
 <script
-  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDiYWC1UozNM6xqegQg__CQvNA3FXgFbEA&libraries=places&callback=initAutocomplete"
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDiYWC1UozNM6xqegQg__CQvNA3FXgFbEA&libraries=places&callback=initMaps"
   async defer>
 </script>
 
 </body>
 </html>
-
