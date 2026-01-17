@@ -69,10 +69,6 @@ button:hover { opacity: .9; }
   overflow: hidden;
 }
 
-.acoes button {
-  margin-top: 6px;
-}
-
 .sugestoes {
   position: absolute;
   background: #1f1f1f;
@@ -102,26 +98,24 @@ button:hover { opacity: .9; }
 
   <div style="position:relative">
     <input id="origem" placeholder="Endereço de origem">
-    <div id="sugestao-origem" class="sugestoes"></div>
+    <div id="sug-origem" class="sugestoes"></div>
   </div>
 
   <div style="position:relative">
     <input id="destino" placeholder="Endereço de destino">
-    <div id="sugestao-destino" class="sugestoes"></div>
+    <div id="sug-destino" class="sugestoes"></div>
   </div>
 
   <input id="kmLitro" type="number" placeholder="Km por litro">
   <input id="precoGasolina" type="number" placeholder="Preço da gasolina">
-  <input id="pedagioManual" type="number" placeholder="Pedágio informado (opcional)">
+  <input id="pedagio" type="number" placeholder="Pedágio informado (opcional)">
 
   <button onclick="calcular()">Calcular</button>
 
   <div id="resultado"></div>
 
-  <div class="acoes">
-    <button onclick="abrirMaps()">Abrir no Google Maps</button>
-    <button onclick="abrirWaze()">Abrir no Waze</button>
-  </div>
+  <button onclick="abrirMaps()">Abrir no Google Maps</button>
+  <button onclick="abrirWaze()">Abrir no Waze</button>
 
   <div id="map"></div>
 </div>
@@ -140,13 +134,13 @@ function initMap() {
   directionsRenderer = new google.maps.DirectionsRenderer({ map });
   autoService = new google.maps.places.AutocompleteService();
 
-  configurarAutocomplete("origem", "sugestao-origem");
-  configurarAutocomplete("destino", "sugestao-destino");
+  configurarAutocomplete("origem", "sug-origem");
+  configurarAutocomplete("destino", "sug-destino");
 }
 
-function configurarAutocomplete(inputId, sugestaoId) {
+function configurarAutocomplete(inputId, sugId) {
   const input = document.getElementById(inputId);
-  const box = document.getElementById(sugestaoId);
+  const box = document.getElementById(sugId);
 
   input.addEventListener("input", () => {
     const valor = input.value.trim();
@@ -180,8 +174,8 @@ function calcular() {
   const origem = document.getElementById("origem").value;
   const destino = document.getElementById("destino").value;
   const kmLitro = parseFloat(document.getElementById("kmLitro").value);
-  const preco = parseFloat(document.getElementById("precoGasolina").value);
-  const pedagioManual = parseFloat(document.getElementById("pedagioManual").value) || 0;
+  const precoGasolina = parseFloat(document.getElementById("precoGasolina").value);
+  const pedagio = parseFloat(document.getElementById("pedagio").value) || 0;
 
   ultimaOrigem = origem;
   ultimoDestino = destino;
@@ -200,18 +194,18 @@ function calcular() {
 
     const rota = res.routes[0].legs[0];
     const distanciaKm = rota.distance.value / 1000;
-    const tempoTexto = rota.duration.text;
+    const tempo = rota.duration.text;
 
     const litros = distanciaKm / kmLitro;
-    const custoComb = litros * preco;
-    const total = custoComb + pedagioManual;
+    const custoComb = litros * precoGasolina;
+    const total = custoComb + pedagio;
 
     document.getElementById("resultado").innerHTML = `
       📍 Distância: ${distanciaKm.toFixed(2)} km<br>
-      ⏱️ Tempo estimado: ${tempoTexto}<br>
+      ⏱️ Tempo estimado: ${tempo}<br>
       ⛽ Combustível: R$ ${custoComb.toFixed(2)}<br>
-      🛣️ Pedágio: R$ ${pedagioManual.toFixed(2)}<br>
-      💰 <strong>Total estimado: R$ ${total.toFixed(2)}</strong>
+      🛣️ Pedágio: R$ ${pedagio.toFixed(2)}<br>
+      💰 <strong>Total: R$ ${total.toFixed(2)}</strong>
     `;
   });
 }
