@@ -100,7 +100,7 @@ button {
 <script>
 let map, directionsService, directionsRenderer, autocompleteService;
 
-const pedagioManualInput = document.getElementById("pedagioManual");
+const VALOR_PEDAGIO_POR_KM = 0.12; // <<< AJUSTE AQUI
 
 function initMap() {
   map = new google.maps.Map(document.getElementById("mapa"), {
@@ -177,7 +177,7 @@ function calcular() {
   const destino = document.getElementById("destino").value;
   const kmLitro = parseFloat(document.getElementById("kmLitro").value);
   const preco = parseFloat(document.getElementById("precoGasolina").value);
-  const pedagioManual = parseFloat(pedagioManualInput.value) || 0;
+  const pedagioManual = parseFloat(document.getElementById("pedagioManual").value) || 0;
 
   if (!origem || !destino || !kmLitro || !preco) {
     alert("Preencha todos os campos obrigatórios");
@@ -204,14 +204,20 @@ function calcular() {
 
       const litros = distanciaKm / kmLitro;
       const custoCombustivel = litros * preco;
-      const total = custoCombustivel + pedagioManual;
+
+      let pedagioCalculado = pedagioManual;
+      if (pedagioManual === 0) {
+        pedagioCalculado = distanciaKm * VALOR_PEDAGIO_POR_KM;
+      }
+
+      const total = custoCombustivel + pedagioCalculado;
 
       document.getElementById("resultado").style.display = "block";
       document.getElementById("resultado").innerHTML = `
         📏 Distância: ${distanciaKm.toFixed(2)} km<br>
         ⏱️ Tempo estimado: ${duracao}<br>
         ⛽ Combustível: R$ ${custoCombustivel.toFixed(2)}<br>
-        🛣️ Pedágio: R$ ${pedagioManual.toFixed(2)}<br>
+        🛣️ Pedágio: R$ ${pedagioCalculado.toFixed(2)}<br>
         💰 Total: R$ ${total.toFixed(2)}
       `;
 
