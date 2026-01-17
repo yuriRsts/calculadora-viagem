@@ -5,89 +5,86 @@
   <title>Calculadora de Viagem</title>
 
   <style>
-* {
-  box-sizing: border-box;
-}
+    * {
+      box-sizing: border-box;
+    }
 
-body {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  min-height: 100vh;
-  background: #1e1e1e;
-  padding-top: 60px; 
-}
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      background: #1e1e1e;
+      padding: 40px 16px;
+      font-family: Arial, sans-serif;
+    }
 
+    .container {
+      width: 100%;
+      max-width: 480px;
+      background: #2a2a2a;
+      color: #ffffff;
+      padding: 28px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    }
 
+    h2 {
+      text-align: center;
+      margin-bottom: 22px;
+    }
 
-.container {
-  width: 100%;
-  max-width: 420px;
-  margin: 0 auto;       
-  background: #2a2a2a;
-  color: #ffffff;
-  padding: 25px;
-  border-radius: 10px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-}
-
-
-
-h2 {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-input {
-  display: block;
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 12px;
-  border-radius: 6px;
-  border: 1px solid #444;
-  background: #1f1f1f;
-  color: #ffffff;
-  font-size: 14px;
-}
-
-
-input, button {
-  height: 48px;
-  font-size: 16px;
-}
-
+    input {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 14px;
+      border-radius: 8px;
+      border: 1px solid #444;
+      background: #1f1f1f;
+      color: #ffffff;
+      font-size: 16px;
+    }
 
     button {
-  width: 100%;
-  padding: 12px;
-  background: linear-gradient(135deg, #4a90e2, #357ab8);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 15px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: transform 0.1s ease, opacity 0.2s;
-}
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #4a90e2, #357ab8);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.1s ease, opacity 0.2s;
+    }
 
-button:hover {
-  opacity: 0.9;
-}
+    button:hover {
+      opacity: 0.9;
+    }
 
-button:active {
-  transform: scale(0.98);
-}
-
+    button:active {
+      transform: scale(0.98);
+    }
 
     #resultado {
-  margin-top: 20px;
-  background: #1b1b1b;
-  padding: 15px;
-  border-radius: 6px;
-  font-size: 14px;
-  border-left: 4px solid #4a90e2;
-}
+      margin-top: 20px;
+      background: #1b1b1b;
+      padding: 16px;
+      border-radius: 8px;
+      font-size: 15px;
+      border-left: 4px solid #4a90e2;
+    }
 
+    /* Ajuste extra para celular */
+    @media (max-width: 480px) {
+      body {
+        padding-top: 20px;
+      }
+
+      .container {
+        padding: 24px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -106,6 +103,21 @@ button:active {
   </div>
 
   <script>
+    let autocompleteOrigem;
+    let autocompleteDestino;
+
+    function initAutocomplete() {
+      autocompleteOrigem = new google.maps.places.Autocomplete(
+        document.getElementById("origem"),
+        { types: ["geocode"] }
+      );
+
+      autocompleteDestino = new google.maps.places.Autocomplete(
+        document.getElementById("destino"),
+        { types: ["geocode"] }
+      );
+    }
+
     function calcular() {
       const origem = document.getElementById("origem").value.trim();
       const destino = document.getElementById("destino").value.trim();
@@ -136,7 +148,7 @@ button:active {
         {
           origins: [origem],
           destinations: [destino],
-          travelMode: "DRIVING",
+          travelMode: google.maps.TravelMode.DRIVING,
         },
         (response, status) => {
           if (status !== "OK") {
@@ -166,13 +178,10 @@ button:active {
   </script>
 
   <script
-    src="https://maps.googleapis.com/maps/api/js?AIzaSyDiYWC1UozNM6xqegQg__CQvNA3FXgFbEA&loading=async">
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDiYWC1UozNM6xqegQg__CQvNA3FXgFbEA&libraries=places&callback=initAutocomplete"
+    async
+    defer>
   </script>
 
 </body>
 </html>
-
-
-
-
-
