@@ -81,11 +81,8 @@ button{
 </div>
 
 <script>
-const API_KEY = "SUA_API_KEY_AQUI";
-
 let map, directionsService, directionsRenderer;
-let ultimaOrigem = "";
-let ultimoDestino = "";
+let ultimaOrigem="", ultimoDestino="";
 
 function initMap(){
   map = new google.maps.Map(document.getElementById("map"), {
@@ -95,34 +92,33 @@ function initMap(){
   directionsService = new google.maps.DirectionsService();
   directionsRenderer = new google.maps.DirectionsRenderer({map});
 
-  // carregar última rota
   const salvo = localStorage.getItem("ultimaRota");
   if(salvo){
     const r = JSON.parse(salvo);
-    document.getElementById("origem").value = r.origem;
-    document.getElementById("destino").value = r.destino;
-    document.getElementById("kmLitro").value = r.km;
-    document.getElementById("precoGasolina").value = r.preco;
+    origem.value = r.origem;
+    destino.value = r.destino;
+    kmLitro.value = r.km;
+    precoGasolina.value = r.preco;
   }
 }
 
 function calcular(){
-  const origem = document.getElementById("origem").value;
-  const destino = document.getElementById("destino").value;
-  const kmLitro = parseFloat(document.getElementById("kmLitro").value);
-  const preco = parseFloat(document.getElementById("precoGasolina").value);
+  const origemVal = origem.value;
+  const destinoVal = destino.value;
+  const km = parseFloat(kmLitro.value);
+  const preco = parseFloat(precoGasolina.value);
 
-  if(!origem || !destino || !kmLitro || !preco){
+  if(!origemVal || !destinoVal || !km || !preco){
     alert("Preencha todos os campos");
     return;
   }
 
-  ultimaOrigem = origem;
-  ultimoDestino = destino;
+  ultimaOrigem = origemVal;
+  ultimoDestino = destinoVal;
 
   directionsService.route({
-    origin:origem,
-    destination:destino,
+    origin:origemVal,
+    destination:destinoVal,
     travelMode:"DRIVING"
   },(res,status)=>{
     if(status!=="OK"){
@@ -135,27 +131,28 @@ function calcular(){
 
     const distancia = leg.distance.value / 1000;
     const tempo = leg.duration.text;
-    const litros = distancia / kmLitro;
+    const litros = distancia / km;
     const custoComb = litros * preco;
 
-    // pedágio estimado simples (R$ 0,12 por km rodoviário)
-    const pedagioEstimado = distancia * 0.12;
+    // Pedágio automático estimado
+    const pedagio = distancia * 0.12;
+    const total = custoComb + pedagio;
 
-    const total = custoComb + pedagioEstimado;
-
-    document.getElementById("resultado").style.display="block";
-    document.getElementById("resultado").innerHTML = `
+    resultado.style.display="block";
+    resultado.innerHTML = `
       📍 Distância: ${distancia.toFixed(2)} km<br>
       ⏱ Tempo estimado: ${tempo}<br>
       ⛽ Combustível: R$ ${custoComb.toFixed(2)}<br>
-      🛣 Pedágio estimado: R$ ${pedagioEstimado.toFixed(2)}<br>
+      🛣 Pedágio estimado: R$ ${pedagio.toFixed(2)}<br>
       💰 Total estimado: <b>R$ ${total.toFixed(2)}</b>
     `;
 
-    document.getElementById("links").style.display="block";
+    links.style.display="block";
 
     localStorage.setItem("ultimaRota", JSON.stringify({
-      origem, destino, km:kmLitro, preco
+      origem:origemVal,
+      destino:destinoVal,
+      km, preco
     }));
   });
 }
