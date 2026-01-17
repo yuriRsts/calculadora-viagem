@@ -6,14 +6,14 @@
 <title>Calculadora de Viagem</title>
 
 <style>
+*{box-sizing:border-box;font-family:Arial}
 body{
   margin:0;
-  min-height:100vh;
   background:#1e1e1e;
+  min-height:100vh;
   display:flex;
   justify-content:center;
   padding:16px;
-  font-family:Arial;
   color:#fff;
 }
 .container{
@@ -23,7 +23,7 @@ body{
   padding:20px;
   border-radius:14px;
 }
-h1{text-align:center}
+h1{text-align:center;margin-bottom:16px}
 input,button{
   width:100%;
   height:44px;
@@ -46,6 +46,10 @@ button{
   padding:10px;
   margin-top:10px;
 }
+.links button{
+  margin-top:6px;
+  background:#3b7bdc;
+}
 #map{
   width:100%;
   height:220px;
@@ -67,6 +71,12 @@ button{
 <button onclick="calcular()">Calcular</button>
 
 <div id="resultado" class="result" style="display:none"></div>
+
+<div class="links" style="display:none" id="links">
+  <button onclick="abrirGoogleMaps()">Abrir no Google Maps</button>
+  <button onclick="abrirWaze()">Abrir no Waze</button>
+</div>
+
 <div id="map"></div>
 </div>
 
@@ -74,6 +84,8 @@ button{
 const API_KEY = "SUA_API_KEY_AQUI";
 
 let map, directionsService, directionsRenderer;
+let ultimaOrigem = "";
+let ultimoDestino = "";
 
 function initMap(){
   map = new google.maps.Map(document.getElementById("map"), {
@@ -82,6 +94,16 @@ function initMap(){
   });
   directionsService = new google.maps.DirectionsService();
   directionsRenderer = new google.maps.DirectionsRenderer({map});
+
+  // carregar última rota
+  const salvo = localStorage.getItem("ultimaRota");
+  if(salvo){
+    const r = JSON.parse(salvo);
+    document.getElementById("origem").value = r.origem;
+    document.getElementById("destino").value = r.destino;
+    document.getElementById("kmLitro").value = r.km;
+    document.getElementById("precoGasolina").value = r.preco;
+  }
 }
 
 function calcular(){
@@ -94,6 +116,9 @@ function calcular(){
     alert("Preencha todos os campos");
     return;
   }
+
+  ultimaOrigem = origem;
+  ultimoDestino = destino;
 
   directionsService.route({
     origin:origem,
@@ -111,16 +136,35 @@ function calcular(){
     const distancia = leg.distance.value / 1000;
     const tempo = leg.duration.text;
     const litros = distancia / kmLitro;
-    const custo = litros * preco;
+    const custoComb = litros * preco;
 
-    const r = document.getElementById("resultado");
-    r.style.display="block";
-    r.innerHTML = `
+    // pedágio estimado simples (R$ 0,12 por km rodoviário)
+    const pedagioEstimado = distancia * 0.12;
+
+    const total = custoComb + pedagioEstimado;
+
+    document.getElementById("resultado").style.display="block";
+    document.getElementById("resultado").innerHTML = `
       📍 Distância: ${distancia.toFixed(2)} km<br>
-      ⏱ Tempo: ${tempo}<br>
-      ⛽ Combustível: R$ ${custo.toFixed(2)}
+      ⏱ Tempo estimado: ${tempo}<br>
+      ⛽ Combustível: R$ ${custoComb.toFixed(2)}<br>
+      🛣 Pedágio estimado: R$ ${pedagioEstimado.toFixed(2)}<br>
+      💰 Total estimado: <b>R$ ${total.toFixed(2)}</b>
     `;
+
+    document.getElementById("links").style.display="block";
+
+    localStorage.setItem("ultimaRota", JSON.stringify({
+      origem, destino, km:kmLitro, preco
+    }));
   });
+}
+
+function abrirGoogleMaps(){
+  window.open(`https://www.google.com/maps/dir/${encodeURIComponent(ultimaOrigem)}/${encodeURIComponent(ultimoDestino)}`);
+}
+function abrirWaze(){
+  window.open(`https://waze.com/ul?q=${encodeURIComponent(ultimoDestino)}`);
 }
 </script>
 
