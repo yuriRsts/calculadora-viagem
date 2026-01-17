@@ -5,16 +5,20 @@
   <title>Calculadora de Viagem</title>
 
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #1e1e1e;
-      margin: 0;
-      padding: 0;
-    }
+* {
+  box-sizing: border-box;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #1e1e1e;
+}
 
 .container {
   max-width: 420px;
-  margin: 60px auto;
   background: #2a2a2a;
   color: #ffffff;
   padding: 25px;
@@ -22,14 +26,13 @@
   box-shadow: 0 10px 25px rgba(0,0,0,0.4);
 }
 
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
 
-
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    input {
+input {
+  display: block;
   width: 100%;
   padding: 12px;
   margin-bottom: 12px;
@@ -40,9 +43,7 @@
   font-size: 14px;
 }
 
-input::placeholder {
-  color: #aaaaaa;
-}
+
 
 
     button {
@@ -159,6 +160,7 @@ button:active {
 
 </body>
 </html>
+
 
 
 
