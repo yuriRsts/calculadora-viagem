@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Calculadora de Viagem</title>
 
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#1f1f1f">
-
 <style>
 *{box-sizing:border-box;font-family:Arial,sans-serif}
 body{
@@ -26,7 +23,7 @@ body{
   padding:20px;
   border-radius:14px;
 }
-h1{text-align:center;margin-bottom:16px}
+h1{text-align:center}
 input,button{
   width:100%;
   height:44px;
@@ -48,7 +45,6 @@ button{
   border-radius:8px;
   padding:10px;
   margin-top:10px;
-  font-size:14px;
 }
 .map{
   width:100%;
@@ -56,19 +52,6 @@ button{
   margin-top:10px;
   border-radius:10px;
   overflow:hidden;
-}
-.actions button{
-  margin-top:8px;
-}
-.history{
-  margin-top:12px;
-  font-size:13px;
-}
-.history div{
-  background:#1f1f1f;
-  padding:6px;
-  border-radius:6px;
-  margin-top:6px;
 }
 </style>
 </head>
@@ -86,22 +69,18 @@ button{
 <button onclick="calcular()">Calcular</button>
 
 <div id="resultado" class="result" style="display:none"></div>
-
-<div class="actions">
-<button onclick="abrirGoogle()">Abrir no Google Maps</button>
-<button onclick="abrirWaze()">Abrir no Waze</button>
-</div>
-
 <div id="map" class="map"></div>
-
-<div class="history">
-<strong>Histórico</strong>
-<div id="historico"></div>
-</div>
 </div>
 
 <script>
 const API_KEY = "SUA_API_KEY_AQUI";
+
+const origemInput = document.getElementById("origem");
+const destinoInput = document.getElementById("destino");
+const kmLitroInput = document.getElementById("kmLitro");
+const precoGasolinaInput = document.getElementById("precoGasolina");
+const pedagioManualInput = document.getElementById("pedagioManual");
+const resultado = document.getElementById("resultado");
 
 let map, directionsService, directionsRenderer;
 
@@ -119,7 +98,7 @@ function calcular(){
   const destino = destinoInput.value;
   const kmLitro = parseFloat(kmLitroInput.value);
   const preco = parseFloat(precoGasolinaInput.value);
-  const pedagioManual = parseFloat(pedagioManualInput.value)||0;
+  const pedagioManual = parseFloat(pedagioManualInput.value) || 0;
 
   if(!origem || !destino || !kmLitro || !preco){
     alert("Preencha todos os campos obrigatórios");
@@ -131,65 +110,34 @@ function calcular(){
     destination:destino,
     travelMode:"DRIVING"
   },(res,status)=>{
-    if(status!=="OK") return alert("Erro ao calcular rota");
+    if(status!=="OK"){
+      alert("Erro ao calcular rota");
+      return;
+    }
 
     directionsRenderer.setDirections(res);
 
     const leg = res.routes[0].legs[0];
-    const distanciaKm = leg.distance.value/1000;
+    const distanciaKm = leg.distance.value / 1000;
     const tempo = leg.duration.text;
 
-    const litros = distanciaKm/kmLitro;
-    const custoComb = litros*preco;
+    const litros = distanciaKm / kmLitro;
+    const custoComb = litros * preco;
 
     const pedagioAuto = distanciaKm * 0.15;
     const total = custoComb + pedagioAuto + pedagioManual;
 
-    resultado.innerHTML = `
-    📍 Distância: ${distanciaKm.toFixed(2)} km<br>
-    ⏱ Tempo estimado: ${tempo}<br>
-    ⛽ Combustível: R$ ${custoComb.toFixed(2)}<br>
-    🛣 Pedágio estimado: R$ ${pedagioAuto.toFixed(2)}<br>
-    ➕ Pedágio manual: R$ ${pedagioManual.toFixed(2)}<br>
-    💰 <strong>Total: R$ ${total.toFixed(2)}</strong>
-    `;
     resultado.style.display="block";
-
-    salvarRota({origem,destino,total});
-    carregarHistorico();
+    resultado.innerHTML = `
+      📍 Distância: ${distanciaKm.toFixed(2)} km<br>
+      ⏱ Tempo estimado: ${tempo}<br>
+      ⛽ Combustível: R$ ${custoComb.toFixed(2)}<br>
+      🛣 Pedágio estimado: R$ ${pedagioAuto.toFixed(2)}<br>
+      ➕ Pedágio manual: R$ ${pedagioManual.toFixed(2)}<br>
+      💰 <strong>Total: R$ ${total.toFixed(2)}</strong>
+    `;
   });
 }
-
-function salvarRota(d){
-  let h = JSON.parse(localStorage.getItem("historico"))||[];
-  h.unshift(d);
-  h = h.slice(0,5);
-  localStorage.setItem("historico",JSON.stringify(h));
-  localStorage.setItem("ultima",JSON.stringify(d));
-}
-
-function carregarHistorico(){
-  const h = JSON.parse(localStorage.getItem("historico"))||[];
-  historico.innerHTML="";
-  h.forEach(i=>{
-    historico.innerHTML+=`<div>${i.origem} → ${i.destino}<br>Total: R$ ${i.total.toFixed(2)}</div>`;
-  });
-}
-
-function abrirGoogle(){
-  window.open(`https://www.google.com/maps/dir/${origemInput.value}/${destinoInput.value}`);
-}
-function abrirWaze(){
-  window.open(`https://waze.com/ul?q=${destinoInput.value}`);
-}
-
-const origemInput = document.getElementById("origem");
-const destinoInput = document.getElementById("destino");
-const kmLitroInput = document.getElementById("kmLitro");
-const precoGasolinaInput = document.getElementById("precoGasolina");
-const pedagioManualInput = document.getElementById("pedagioManual");
-
-carregarHistorico();
 </script>
 
 <script async
