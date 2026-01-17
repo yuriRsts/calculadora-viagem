@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Calculadora de Viagem</title>
 
   <style>
@@ -15,18 +15,19 @@
       align-items: flex-start;
       min-height: 100vh;
       background: #1e1e1e;
-      padding: 40px 16px;
+      padding: 24px 16px;
       font-family: Arial, sans-serif;
     }
 
     .container {
       width: 100%;
-      max-width: 480px;
+      max-width: 520px;
       background: #2a2a2a;
       color: #ffffff;
       padding: 28px;
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      border-radius: 14px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+      margin-top: 20px;
     }
 
     h2 {
@@ -36,9 +37,9 @@
 
     input {
       width: 100%;
-      padding: 14px;
+      padding: 16px;
       margin-bottom: 14px;
-      border-radius: 8px;
+      border-radius: 10px;
       border: 1px solid #444;
       background: #1f1f1f;
       color: #ffffff;
@@ -46,16 +47,16 @@
     }
 
     input::placeholder {
-      color: #aaaaaa;
+      color: #aaa;
     }
 
     button {
       width: 100%;
-      padding: 14px;
+      padding: 16px;
       background: linear-gradient(135deg, #4a90e2, #357ab8);
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       font-size: 16px;
       font-weight: bold;
       cursor: pointer;
@@ -71,7 +72,7 @@
     }
 
     #resultado {
-      margin-top: 20px;
+      margin-top: 18px;
       background: #1b1b1b;
       padding: 16px;
       border-radius: 8px;
@@ -79,26 +80,49 @@
       border-left: 4px solid #4a90e2;
     }
 
-    @media (max-width: 480px) {
-      body {
-        padding-top: 20px;
-      }
+    /* LISTA DE AUTOCOMPLETE */
+    .autocomplete-list {
+      position: absolute;
+      background: #1b1b1b;
+      border: 1px solid #444;
+      border-radius: 8px;
+      z-index: 99999;
+      overflow: hidden;
+    }
 
+    .autocomplete-item {
+      padding: 12px;
+      cursor: pointer;
+      border-bottom: 1px solid #333;
+      color: #fff;
+      font-size: 15px;
+    }
+
+    .autocomplete-item:last-child {
+      border-bottom: none;
+    }
+
+    .autocomplete-item:hover {
+      background: #333;
+    }
+
+    @media (max-width: 480px) {
       .container {
-        padding: 24px;
+        padding: 26px;
       }
     }
   </style>
 </head>
+
 <body>
 
   <div class="container">
     <h2>Calculadora de Viagem</h2>
 
-    <input id="origem" placeholder="Endereço de origem">
-    <input id="destino" placeholder="Endereço de destino">
-    <input id="kmLitro" type="number" placeholder="Km por litro">
-    <input id="preco" type="number" step="0.01" placeholder="Preço da gasolina">
+    <input id="origem" placeholder="Endereço de origem" autocomplete="off" />
+    <input id="destino" placeholder="Endereço de destino" autocomplete="off" />
+    <input id="kmLitro" type="number" placeholder="Km por litro" />
+    <input id="preco" type="number" step="0.01" placeholder="Preço da gasolina" />
 
     <button onclick="calcular()">Calcular</button>
 
@@ -106,82 +130,102 @@
   </div>
 
   <script>
-let service;
+    let service;
 
-function initAutocomplete() {
-  service = new google.maps.places.AutocompleteService();
-  configurarCampo("origem");
-  configurarCampo("destino");
-}
-
-function configurarCampo(id) {
-  const input = document.getElementById(id);
-  const lista = document.createElement("div");
-
-  lista.style.position = "absolute";
-  lista.style.background = "#1b1b1b";
-  lista.style.border = "1px solid #444";
-  lista.style.borderRadius = "6px";
-  lista.style.zIndex = "9999";
-  lista.style.width = input.offsetWidth + "px";
-  lista.style.display = "none";
-
-  input.parentNode.appendChild(lista);
-
-  input.addEventListener("input", () => {
-    const valor = input.value.trim();
-
-    if (valor.length < 3) {
-      lista.style.display = "none";
-      return;
+    function initAutocomplete() {
+      service = new google.maps.places.AutocompleteService();
+      configurarCampo("origem");
+      configurarCampo("destino");
     }
 
-    service.getPlacePredictions(
-      {
-        input: valor,
-        componentRestrictions: { country: "br" },
-        types: ["geocode"]
-      },
-      (predictions, status) => {
-        lista.innerHTML = "";
+    function configurarCampo(id) {
+      const input = document.getElementById(id);
+      const lista = document.createElement("div");
+      lista.className = "autocomplete-list";
+      lista.style.display = "none";
 
-        if (
-          status !== google.maps.places.PlacesServiceStatus.OK ||
-          !predictions
-        ) {
+      document.body.appendChild(lista);
+
+      function posicionarLista() {
+        const rect = input.getBoundingClientRect();
+        lista.style.width = rect.width + "px";
+        lista.style.left = rect.left + window.scrollX + "px";
+        lista.style.top = rect.bottom + window.scrollY + "px";
+      }
+
+      input.addEventListener("input", () => {
+        const valor = input.value.trim();
+
+        if (valor.length < 3) {
           lista.style.display = "none";
           return;
         }
 
-        predictions.forEach(p => {
-          const item = document.createElement("div");
-          item.textContent = p.description;
-          item.style.padding = "10px";
-          item.style.cursor = "pointer";
-          item.style.borderBottom = "1px solid #333";
-          item.style.color = "#fff";
+        posicionarLista();
 
-          item.onclick = () => {
-            input.value = p.description;
-            lista.style.display = "none";
-          };
+        service.getPlacePredictions(
+          {
+            input: valor,
+            componentRestrictions: { country: "br" },
+            types: ["geocode"]
+          },
+          (predictions, status) => {
+            lista.innerHTML = "";
 
-          lista.appendChild(item);
-        });
+            if (
+              status !== google.maps.places.PlacesServiceStatus.OK ||
+              !predictions
+            ) {
+              lista.style.display = "none";
+              return;
+            }
 
-        lista.style.display = "block";
-      }
-    );
-  });
+            predictions.forEach(p => {
+              const item = document.createElement("div");
+              item.className = "autocomplete-item";
+              item.textContent = p.description;
 
-  document.addEventListener("click", e => {
-    if (!input.contains(e.target)) {
-      lista.style.display = "none";
+              item.onclick = () => {
+                input.value = p.description;
+                lista.style.display = "none";
+              };
+
+              lista.appendChild(item);
+            });
+
+            lista.style.display = "block";
+          }
+        );
+      });
+
+      window.addEventListener("scroll", () => {
+        if (lista.style.display === "block") posicionarLista();
+      });
+
+      window.addEventListener("resize", () => {
+        if (lista.style.display === "block") posicionarLista();
+      });
+
+      document.addEventListener("click", e => {
+        if (e.target !== input && !lista.contains(e.target)) {
+          lista.style.display = "none";
+        }
+      });
     }
-  });
-}
-</script>
 
+    function calcular() {
+      const kmLitro = parseFloat(document.getElementById("kmLitro").value);
+      const preco = parseFloat(document.getElementById("preco").value);
+
+      if (!kmLitro || !preco) {
+        alert("Preencha km por litro e preço da gasolina");
+        return;
+      }
+
+      document.getElementById("resultado").innerHTML =
+        "⚠️ O cálculo de distância pode ser integrado ao Google Directions API depois.";
+    }
+  </script>
 
   <script
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDiYWC1UozNM6xqegQg__CQvNA3FXgFbEA&libraries=places&callback=initAutocomplete"
@@ -191,4 +235,3 @@ function configurarCampo(id) {
 
 </body>
 </html>
-
