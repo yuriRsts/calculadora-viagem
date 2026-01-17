@@ -122,6 +122,11 @@ let directionsRenderer;
 let map;
 
 function initMaps() {
+  if (!google || !google.maps || !google.maps.places) {
+    console.error("Google Maps Places não carregou");
+    return;
+  }
+
   autocompleteService = new google.maps.places.AutocompleteService();
   directionsService = new google.maps.DirectionsService();
   directionsRenderer = new google.maps.DirectionsRenderer();
@@ -129,6 +134,7 @@ function initMaps() {
   configurarCampo("origem");
   configurarCampo("destino");
 }
+
 
 function configurarCampo(id) {
   const input = document.getElementById(id);
@@ -241,3 +247,4 @@ function calcular() {
 
 </body>
 </html>
+
