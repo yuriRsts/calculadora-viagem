@@ -120,106 +120,54 @@ button:active {
 </div>
 
 <script>
-let autocompleteService;
-let directionsService;
-
-function initMaps() {
-  autocompleteService = new google.maps.places.AutocompleteService();
-  directionsService = new google.maps.DirectionsService();
-
-  configurarAutocomplete("origem");
-  configurarAutocomplete("destino");
-}
-
-function configurarAutocomplete(id) {
-  const input = document.getElementById(id);
-  const lista = document.createElement("div");
-  lista.className = "sugestoes";
-  lista.style.display = "none";
-  document.body.appendChild(lista);
-
-  function posicionarLista() {
-    const rect = input.getBoundingClientRect();
-    lista.style.width = rect.width + "px";
-    lista.style.left = rect.left + "px";
-    lista.style.top = rect.bottom + window.scrollY + 6 + "px";
-  }
-
-  input.addEventListener("input", () => {
-    const valor = input.value.trim();
-
-    if (valor.length < 3) {
-      lista.style.display = "none";
-      return;
-    }
-
-    posicionarLista();
-
-    autocompleteService.getPlacePredictions({
-      input: valor,
-      componentRestrictions: { country: "br" }
-    }, (predictions, status) => {
-      if (status !== "OK" || !predictions) return;
-
-      lista.innerHTML = "";
-      predictions.forEach(p => {
-        const item = document.createElement("div");
-        item.textContent = p.description;
-        item.onclick = () => {
-          input.value = p.description;
-          lista.style.display = "none";
-        };
-        lista.appendChild(item);
-      });
-
-      lista.style.display = "block";
-    });
-  });
-
-  document.addEventListener("click", e => {
-    if (e.target !== input) lista.style.display = "none";
-  });
-
-  window.addEventListener("scroll", posicionarLista);
-  window.addEventListener("resize", posicionarLista);
-}
-
 function calcular() {
   const origem = document.getElementById("origem").value;
   const destino = document.getElementById("destino").value;
-  const kmLitro = parseFloat(document.getElementById("kmLitro").value);
-  const preco = parseFloat(document.getElementById("preco").value);
+  const kmPorLitro = parseFloat(document.getElementById("kmLitro").value);
+  const precoGasolina = parseFloat(document.getElementById("precoGasolina").value);
   const resultado = document.getElementById("resultado");
 
-  if (!origem || !destino || kmLitro <= 0 || preco <= 0) {
-    alert("Preencha todos os campos corretamente.");
+  if (!origem || !destino || !kmPorLitro || !precoGasolina) {
+    resultado.innerHTML = "⚠️ Preencha todos os campos.";
     return;
   }
 
-  directionsService.route({
-    origin: origem,
-    destination: destino,
-    travelMode: "DRIVING"
-  }, (response, status) => {
-    if (status !== "OK") {
-      alert("Erro ao calcular a rota.");
-      return;
+  const directionsService = new google.maps.DirectionsService();
+
+  directionsService.route(
+    {
+      origin: origem,
+      destination: destino,
+      travelMode: google.maps.TravelMode.DRIVING
+    },
+    (response, status) => {
+      if (status !== "OK") {
+        resultado.innerHTML = "❌ Não foi possível calcular a rota.";
+        return;
+      }
+
+      const route = response.routes[0].legs[0];
+
+      const distanciaKm = route.distance.value / 1000;
+      const duracaoTexto = route.duration.text;
+      const duracaoSegundos = route.duration.value;
+
+      const consumo = distanciaKm / kmPorLitro;
+      const custo = consumo * precoGasolina;
+
+      resultado.innerHTML = `
+        <div style="text-align:left">
+          📍 <b>Distância:</b> ${distanciaKm.toFixed(2)} km<br>
+          ⏱ <b>Tempo estimado:</b> ${duracaoTexto}<br>
+          ⛽ <b>Consumo:</b> ${consumo.toFixed(2)} L<br>
+          💰 <b>Custo estimado:</b> R$ ${custo.toFixed(2)}
+        </div>
+      `;
     }
-
-    const metros = response.routes[0].legs[0].distance.value;
-    const km = metros / 1000;
-    const litros = km / kmLitro;
-    const custo = litros * preco;
-
-    resultado.style.display = "block";
-    resultado.innerHTML = `
-      📍 <b>Distância:</b> ${km.toFixed(2)} km<br>
-      ⛽ <b>Consumo:</b> ${litros.toFixed(2)} L<br>
-      💰 <b>Custo estimado:</b> R$ ${custo.toFixed(2)}
-    `;
-  });
+  );
 }
 </script>
+
 
 <script
 src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDiYWC1UozNM6xqegQg__CQvNA3FXgFbEA&libraries=places&callback=initMaps"
@@ -228,4 +176,5 @@ async defer>
 
 </body>
 </html>
+
 
