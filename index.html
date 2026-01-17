@@ -45,6 +45,10 @@
       font-size: 16px;
     }
 
+    input::placeholder {
+      color: #aaaaaa;
+    }
+
     button {
       width: 100%;
       padding: 14px;
@@ -75,7 +79,6 @@
       border-left: 4px solid #4a90e2;
     }
 
-    /* Ajuste extra para celular */
     @media (max-width: 480px) {
       body {
         padding-top: 20px;
@@ -107,15 +110,31 @@
     let autocompleteDestino;
 
     function initAutocomplete() {
-      autocompleteOrigem = new google.maps.places.Autocomplete(
-        document.getElementById("origem"),
-        { types: ["geocode"] }
-      );
+      const inputOrigem = document.getElementById("origem");
+      const inputDestino = document.getElementById("destino");
 
-      autocompleteDestino = new google.maps.places.Autocomplete(
-        document.getElementById("destino"),
-        { types: ["geocode"] }
-      );
+      const options = {
+        types: ["geocode"],
+        componentRestrictions: { country: "br" },
+        fields: ["place_id", "geometry", "name"]
+      };
+
+      autocompleteOrigem = new google.maps.places.Autocomplete(inputOrigem, options);
+      autocompleteDestino = new google.maps.places.Autocomplete(inputDestino, options);
+
+      limitarAutocomplete(inputOrigem);
+      limitarAutocomplete(inputDestino);
+    }
+
+    // 🔒 Autocomplete só após 3 letras
+    function limitarAutocomplete(input) {
+      input.addEventListener("input", () => {
+        if (input.value.length < 3) {
+          input.setAttribute("autocomplete", "off");
+        } else {
+          input.setAttribute("autocomplete", "on");
+        }
+      });
     }
 
     function calcular() {
