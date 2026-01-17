@@ -54,6 +54,12 @@ button {
   cursor: pointer;
 }
 
+.info {
+  font-size: 13px;
+  color: #bbb;
+  margin-bottom: 8px;
+}
+
 .resultado {
   margin-top: 12px;
   background: #1b1b1b;
@@ -69,10 +75,6 @@ button {
   border-radius: 10px;
   overflow: hidden;
 }
-
-.link-btn {
-  margin-top: 8px;
-}
 </style>
 </head>
 
@@ -85,14 +87,17 @@ button {
   <input id="destino" placeholder="Endereço de destino">
   <input id="kmLitro" type="number" step="0.1" placeholder="Km por litro">
   <input id="precoGasolina" type="number" step="0.01" placeholder="Preço da gasolina">
-  <input id="pedagioManual" type="number" step="0.01" placeholder="Pedágio informado (opcional)">
+
+  <div class="info">
+    🛣️ Pedágio é estimado automaticamente pela distância.<br>
+    (Opcional) Informe abaixo se quiser substituir o valor.
+  </div>
+
+  <input id="pedagioManual" type="number" step="0.01" placeholder="Pedágio manual (opcional)">
 
   <button onclick="calcular()">Calcular</button>
 
   <div id="resultado" class="resultado" style="display:none"></div>
-
-  <button id="btnMaps" class="link-btn" style="display:none">📍 Abrir no Google Maps</button>
-  <button id="btnWaze" class="link-btn" style="display:none">🚗 Abrir no Waze</button>
 
   <div id="mapa" class="mapa"></div>
 </div>
@@ -126,7 +131,6 @@ function configurarAutocomplete(id) {
   lista.style.borderRadius = "6px";
   lista.style.zIndex = "9999";
   lista.style.display = "none";
-  lista.style.color = "#fff";
 
   document.body.appendChild(lista);
 
@@ -195,11 +199,7 @@ function calcular() {
   }
 
   directionsService.route(
-    {
-      origin: origem,
-      destination: destino,
-      travelMode: "DRIVING"
-    },
+    { origin: origem, destination: destino, travelMode: "DRIVING" },
     (res, status) => {
       if (status !== "OK") {
         alert("Erro ao calcular rota");
@@ -212,39 +212,24 @@ function calcular() {
       const distanciaKm = rota.distance.value / 1000;
       const duracao = rota.duration.text;
 
-      const litros = distanciaKm / kmLitro;
-      const custoCombustivel = litros * preco;
+      const custoCombustivel = (distanciaKm / kmLitro) * preco;
 
-      let pedagioCalculado;
-      if (!isNaN(pedagioManual) && pedagioManual > 0) {
-        pedagioCalculado = pedagioManual;
-      } else {
-        pedagioCalculado = distanciaKm * VALOR_PEDAGIO_POR_KM;
-      }
+      const pedagioEstimado = distanciaKm * VALOR_PEDAGIO_POR_KM;
+      const pedagioFinal =
+        !isNaN(pedagioManual) && pedagioManual > 0
+          ? pedagioManual
+          : pedagioEstimado;
 
-      const total = custoCombustivel + pedagioCalculado;
+      const total = custoCombustivel + pedagioFinal;
 
       document.getElementById("resultado").style.display = "block";
       document.getElementById("resultado").innerHTML = `
         📏 Distância: ${distanciaKm.toFixed(2)} km<br>
         ⏱️ Tempo estimado: ${duracao}<br>
         ⛽ Combustível: R$ ${custoCombustivel.toFixed(2)}<br>
-        🛣️ Pedágio: R$ ${pedagioCalculado.toFixed(2)}<br>
-        💰 Total: R$ ${total.toFixed(2)}
+        🛣️ Pedágio estimado: R$ ${pedagioEstimado.toFixed(2)}<br>
+        💰 Total da viagem: R$ ${total.toFixed(2)}
       `;
-
-      document.getElementById("btnMaps").style.display = "block";
-      document.getElementById("btnWaze").style.display = "block";
-
-      document.getElementById("btnMaps").onclick = () => {
-        window.open(
-          `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origem)}&destination=${encodeURIComponent(destino)}`
-        );
-      };
-
-      document.getElementById("btnWaze").onclick = () => {
-        window.open(`https://waze.com/ul?q=${encodeURIComponent(destino)}`);
-      };
     }
   );
 }
