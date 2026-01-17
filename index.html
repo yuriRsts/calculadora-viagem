@@ -77,21 +77,30 @@ button:active {
 /* Lista autocomplete */
 .sugestoes {
   position: absolute;
-  background: #1f1f1f;
-  border: 1px solid #444;
+  background: #ffffff;        /* FUNDO BRANCO */
+  border: 1px solid #ccc;
   border-radius: 6px;
   z-index: 9999;
   overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
 }
 
 .sugestoes div {
   padding: 10px;
   cursor: pointer;
+  color: #111;                /* TEXTO ESCURO */
+  font-size: 14px;
+  border-bottom: 1px solid #eee;
+}
+
+.sugestoes div:last-child {
+  border-bottom: none;
 }
 
 .sugestoes div:hover {
-  background: #333;
+  background: #f2f2f2;        /* HOVER CLARO */
 }
+
 </style>
 </head>
 
@@ -219,3 +228,4 @@ async defer>
 
 </body>
 </html>
+
