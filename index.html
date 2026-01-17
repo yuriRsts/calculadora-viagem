@@ -20,7 +20,7 @@ body {
 
 .container {
   width: 100%;
-  max-width: 440px;
+  max-width: 460px;
   background: #2a2a2a;
   padding: 24px;
   border-radius: 12px;
@@ -73,7 +73,7 @@ button:hover { opacity: 0.9; }
   display: none;
 }
 
-/* AUTOCOMPLETE */
+/* Autocomplete */
 .sugestoes {
   position: absolute;
   background: #ffffff;
@@ -93,8 +93,12 @@ button:hover { opacity: 0.9; }
 }
 
 .sugestoes div:last-child { border-bottom: none; }
-
 .sugestoes div:hover { background: #f2f2f2; }
+
+/* Botões externos */
+.rotasExternas button {
+  margin-top: 8px;
+}
 </style>
 </head>
 
@@ -112,6 +116,12 @@ button:hover { opacity: 0.9; }
   <button onclick="calcular()">Calcular</button>
 
   <div id="resultado"></div>
+
+  <div id="rotasExternas" class="rotasExternas" style="display:none;">
+    <button onclick="abrirGoogleMaps()">🗺 Abrir no Google Maps</button>
+    <button onclick="abrirWaze()">🚗 Abrir no Waze</button>
+  </div>
+
   <div id="map"></div>
 </div>
 
@@ -122,11 +132,6 @@ let directionsRenderer;
 let map;
 
 function initMaps() {
-  if (!google || !google.maps || !google.maps.places) {
-    console.error("Google Maps Places não carregou");
-    return;
-  }
-
   autocompleteService = new google.maps.places.AutocompleteService();
   directionsService = new google.maps.DirectionsService();
   directionsRenderer = new google.maps.DirectionsRenderer();
@@ -134,7 +139,6 @@ function initMaps() {
   configurarCampo("origem");
   configurarCampo("destino");
 }
-
 
 function configurarCampo(id) {
   const input = document.getElementById(id);
@@ -225,6 +229,8 @@ function calcular() {
         💰 <b>Total da viagem:</b> R$ ${total.toFixed(2)}
       `;
 
+      document.getElementById("rotasExternas").style.display = "block";
+
       if (!map) {
         map = new google.maps.Map(document.getElementById("map"), {
           zoom: 7,
@@ -238,6 +244,19 @@ function calcular() {
     }
   );
 }
+
+function abrirGoogleMaps() {
+  const origem = encodeURIComponent(document.getElementById("origem").value);
+  const destino = encodeURIComponent(document.getElementById("destino").value);
+  const url = `https://www.google.com/maps/dir/?api=1&origin=${origem}&destination=${destino}&travelmode=driving`;
+  window.open(url, "_blank");
+}
+
+function abrirWaze() {
+  const destino = encodeURIComponent(document.getElementById("destino").value);
+  const url = `https://waze.com/ul?q=${destino}&navigate=yes`;
+  window.open(url, "_blank");
+}
 </script>
 
 <script
@@ -247,4 +266,3 @@ function calcular() {
 
 </body>
 </html>
-
