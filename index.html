@@ -53,6 +53,10 @@ button {
   cursor: pointer;
 }
 
+button:hover {
+  opacity: 0.9;
+}
+
 .info {
   font-size: 13px;
   color: #bbb;
@@ -103,7 +107,7 @@ button {
 <script>
 let map, directionsService, directionsRenderer, autocompleteService;
 
-const VALOR_PEDAGIO_POR_KM = 0.08; // AJUSTE AQUI
+const VALOR_PEDAGIO_POR_KM = 0.08;
 
 function initMap() {
   map = new google.maps.Map(document.getElementById("mapa"), {
@@ -215,12 +219,30 @@ function calcular() {
         ⏱️ Tempo: ${duracao}<br>
         ⛽ Combustível: R$ ${combustivel.toFixed(2)}<br>
         🛣️ Pedágio estimado: R$ ${pedagioEstimado.toFixed(2)}<br>
-        💰 Total: R$ ${total.toFixed(2)}
+        💰 Total: R$ ${total.toFixed(2)}<br><br>
+
+        <button onclick="abrirGoogleMaps('${origem}', '${destino}')">
+          📍 Abrir no Google Maps
+        </button>
+
+        <button onclick="abrirWaze('${destino}')">
+          🚗 Abrir no Waze
+        </button>
       `;
     }
   );
 }
-  // version: 1.0.1
+
+function abrirGoogleMaps(origem, destino) {
+  const url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origem)}&destination=${encodeURIComponent(destino)}&travelmode=driving`;
+  window.open(url, "_blank");
+}
+
+function abrirWaze(destino) {
+  const url = `https://www.waze.com/ul?q=${encodeURIComponent(destino)}&navigate=yes`;
+  window.open(url, "_blank");
+}
+// version: 1.0.2
 </script>
 
 <script async defer
