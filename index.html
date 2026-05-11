@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calculadora de Viagem</title>
+
+<title>Calcular Rota</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2b7cff">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 
 <style>
 * {
@@ -54,7 +60,7 @@ button {
 }
 
 button:hover {
-  opacity: 0.9;
+  opacity: 0.92;
 }
 
 .info {
@@ -78,13 +84,33 @@ button:hover {
   border-radius: 10px;
   overflow: hidden;
 }
+
+#offline-msg {
+  display: none;
+  background: #ff0000;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 12px;
+  border-radius: 8px;
+}
+
+.botoes-app button {
+  margin-top: 8px;
+}
 </style>
 </head>
 
 <body>
 
 <div class="container">
-  <h2>Calculadora de Viagem</h2>
+
+  <div id="offline-msg">
+    ⚠️ Necessita conexão com internet para calcular rotas.
+  </div>
+
+  <h2>Calcular Rota</h2>
 
   <input id="origem" placeholder="Endereço de origem">
   <input id="destino" placeholder="Endereço de destino">
@@ -102,6 +128,7 @@ button:hover {
 
   <div id="resultado" class="resultado" style="display:none"></div>
   <div id="mapa" class="mapa"></div>
+
 </div>
 
 <script>
@@ -119,6 +146,7 @@ function initMap() {
   directionsRenderer = new google.maps.DirectionsRenderer({ map });
 
   autocompleteService = new google.maps.places.AutocompleteService();
+
   configurarAutocomplete("origem");
   configurarAutocomplete("destino");
 }
@@ -138,28 +166,37 @@ function configurarAutocomplete(id) {
 
   input.addEventListener("input", () => {
     const valor = input.value.trim();
+
     if (valor.length < 3) return;
 
     const rect = input.getBoundingClientRect();
+
     lista.style.left = rect.left + "px";
     lista.style.top = rect.bottom + window.scrollY + "px";
     lista.style.width = rect.width + "px";
 
     autocompleteService.getPlacePredictions(
-      { input: valor, componentRestrictions: { country: "br" } },
+      {
+        input: valor,
+        componentRestrictions: { country: "br" }
+      },
       predictions => {
         lista.innerHTML = "";
+
         if (!predictions) return;
 
         predictions.forEach(p => {
           const item = document.createElement("div");
+
           item.textContent = p.description;
           item.style.padding = "10px";
           item.style.cursor = "pointer";
+
           item.onclick = () => {
             input.value = p.description;
             lista.style.display = "none";
           };
+
           lista.appendChild(item);
         });
 
@@ -169,7 +206,9 @@ function configurarAutocomplete(id) {
   });
 
   document.addEventListener("click", e => {
-    if (e.target !== input) lista.style.display = "none";
+    if (e.target !== input) {
+      lista.style.display = "none";
+    }
   });
 }
 
@@ -181,20 +220,24 @@ function calcular() {
   const pedagioManual = parseFloat(document.getElementById("pedagioManual").value);
 
   if (!origem || !destino) {
-    alert("Informe origem e destino");
+    alert("Informe origem e destino.");
     return;
   }
 
   if (isNaN(kmLitro) || kmLitro <= 0 || isNaN(preco) || preco <= 0) {
-    alert("Preencha corretamente os dados do veículo");
+    alert("Preencha corretamente os dados.");
     return;
   }
 
   directionsService.route(
-    { origin: origem, destination: destino, travelMode: "DRIVING" },
+    {
+      origin: origem,
+      destination: destino,
+      travelMode: "DRIVING"
+    },
     (res, status) => {
       if (status !== "OK") {
-        alert("Erro ao calcular rota");
+        alert("Erro ao calcular rota.");
         return;
       }
 
@@ -206,6 +249,7 @@ function calcular() {
 
       const combustivel = (distanciaKm / kmLitro) * preco;
       const pedagioEstimado = distanciaKm * VALOR_PEDAGIO_POR_KM;
+
       const pedagioFinal =
         !isNaN(pedagioManual) && pedagioManual > 0
           ? pedagioManual
@@ -214,35 +258,64 @@ function calcular() {
       const total = combustivel + pedagioFinal;
 
       document.getElementById("resultado").style.display = "block";
+
       document.getElementById("resultado").innerHTML = `
         📏 Distância: ${distanciaKm.toFixed(2)} km<br>
         ⏱️ Tempo: ${duracao}<br>
         ⛽ Combustível: R$ ${combustivel.toFixed(2)}<br>
-        🛣️ Pedágio estimado: R$ ${pedagioEstimado.toFixed(2)}<br>
+        🛣️ Pedágio estimado: R$ ${pedagioFinal.toFixed(2)}<br>
         💰 Total: R$ ${total.toFixed(2)}<br><br>
 
-        <button onclick="abrirGoogleMaps('${origem}', '${destino}')">
-          📍 Abrir no Google Maps
-        </button>
+        <div class="botoes-app">
+          <button onclick="abrirGoogleMaps('${origem}', '${destino}')">
+            📍 Abrir no Google Maps
+          </button>
 
-        <button onclick="abrirWaze('${destino}')">
-          🚗 Abrir no Waze
-        </button>
+          <button onclick="abrirWaze('${destino}')">
+            🚗 Abrir no Waze
+          </button>
+        </div>
       `;
     }
   );
 }
 
 function abrirGoogleMaps(origem, destino) {
-  const url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origem)}&destination=${encodeURIComponent(destino)}&travelmode=driving`;
+  const url =
+    `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origem)}&destination=${encodeURIComponent(destino)}&travelmode=driving`;
+
   window.open(url, "_blank");
 }
 
 function abrirWaze(destino) {
-  const url = `https://www.waze.com/ul?q=${encodeURIComponent(destino)}&navigate=yes`;
+  const url =
+    `https://www.waze.com/ul?q=${encodeURIComponent(destino)}&navigate=yes`;
+
   window.open(url, "_blank");
 }
-// version: 1.0.2
+
+function verificarInternet() {
+  const aviso = document.getElementById("offline-msg");
+
+  if (navigator.onLine) {
+    aviso.style.display = "none";
+  } else {
+    aviso.style.display = "block";
+  }
+}
+
+window.addEventListener("online", verificarInternet);
+window.addEventListener("offline", verificarInternet);
+
+verificarInternet();
+
+// version: 2.0.0
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js");
+}
 </script>
 
 <script async defer
