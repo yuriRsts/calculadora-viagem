@@ -12,92 +12,120 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 
 <style>
-* {
-  box-sizing: border-box;
-  font-family: Arial, sans-serif;
+*{
+  box-sizing:border-box;
+  font-family:Arial,sans-serif;
 }
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  background: #1e1e1e;
-  display: flex;
-  justify-content: center;
-  padding: 20px;
-  color: #fff;
+body{
+  margin:0;
+  min-height:100vh;
+  background:#1e1e1e;
+  display:flex;
+  justify-content:center;
+  padding:20px;
+  color:#fff;
 }
 
-.container {
-  width: 100%;
-  max-width: 420px;
-  background: #2a2a2a;
-  padding: 20px;
-  border-radius: 12px;
+.container{
+  width:100%;
+  max-width:420px;
+  background:#2a2a2a;
+  padding:20px;
+  border-radius:12px;
 }
 
-h2 {
-  text-align: center;
-  margin-bottom: 20px;
+h2{
+  text-align:center;
+  margin-bottom:18px;
 }
 
-input, button {
-  width: 100%;
-  height: 46px;
-  margin-bottom: 10px;
-  border-radius: 8px;
-  border: 1px solid #444;
-  background: #1f1f1f;
-  color: #fff;
-  padding: 0 12px;
-  font-size: 15px;
+input,button{
+  width:100%;
+  height:46px;
+  margin-bottom:10px;
+  border-radius:8px;
+  border:1px solid #444;
+  background:#1f1f1f;
+  color:#fff;
+  padding:0 12px;
+  font-size:15px;
 }
 
-button {
-  background: linear-gradient(135deg, #4a90e2, #357ab8);
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
+button{
+  background:linear-gradient(135deg,#4a90e2,#357ab8);
+  border:none;
+  font-weight:bold;
+  cursor:pointer;
 }
 
-button:hover {
-  opacity: 0.92;
+button:hover{
+  opacity:.92;
 }
 
-.info {
-  font-size: 13px;
-  color: #bbb;
-  margin-bottom: 8px;
+.info{
+  font-size:13px;
+  color:#bbb;
+  margin-bottom:8px;
 }
 
-.resultado {
-  margin-top: 12px;
-  background: #1b1b1b;
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 14px;
+.resultado{
+  margin-top:12px;
+  background:#1b1b1b;
+  padding:12px;
+  border-radius:8px;
+  font-size:14px;
 }
 
-.mapa {
-  width: 100%;
-  height: 260px;
-  margin-top: 12px;
-  border-radius: 10px;
-  overflow: hidden;
+.mapa{
+  width:100%;
+  height:260px;
+  margin-top:12px;
+  border-radius:10px;
+  overflow:hidden;
 }
 
-#offline-msg {
-  display: none;
-  background: #ff0000;
-  color: white;
-  padding: 10px;
-  text-align: center;
-  font-weight: bold;
-  margin-bottom: 12px;
-  border-radius: 8px;
+#offline-msg{
+  display:none;
+  background:#ff0000;
+  color:white;
+  padding:10px;
+  text-align:center;
+  font-weight:bold;
+  margin-bottom:12px;
+  border-radius:8px;
 }
 
-.botoes-app button {
-  margin-top: 8px;
+.botoes-app button{
+  margin-top:8px;
+}
+
+/* BOTÃO PREMIUM INSTALAR */
+.btn-install{
+  display:none;
+  width:100%;
+  height:52px;
+  border:none;
+  border-radius:12px;
+  font-size:18px;
+  font-weight:bold;
+  color:white;
+  cursor:pointer;
+  margin-bottom:15px;
+  background:linear-gradient(135deg,#00c853,#00e676);
+  box-shadow:0 0 15px rgba(0,255,120,.35);
+  animation:pulse 1.8s infinite;
+  transition:.25s;
+}
+
+.btn-install:hover{
+  transform:scale(1.02);
+}
+
+@keyframes pulse{
+  0%{box-shadow:0 0 0 0 rgba(0,255,120,.55);}
+  70%{box-shadow:0 0 0 18px rgba(0,255,120,0);}
+  100%{box-shadow:0 0 0 0 rgba(0,255,120,0);}
 }
 </style>
 </head>
@@ -106,44 +134,50 @@ button:hover {
 
 <div class="container">
 
-  <div id="offline-msg">
-    ⚠️ Necessita conexão com internet para calcular rotas.
-  </div>
+<div id="offline-msg">
+⚠️ Necessita conexão com internet para calcular rotas.
+</div>
 
-  <h2>Calcular Rota</h2>
+<button id="btnInstalar" class="btn-install">
+📲 Instalar App
+</button>
 
-  <input id="origem" placeholder="Endereço de origem">
-  <input id="destino" placeholder="Endereço de destino">
-  <input id="kmLitro" type="number" step="0.1" placeholder="Km por litro">
-  <input id="precoGasolina" type="number" step="0.01" placeholder="Preço da gasolina">
+<h2>Calcular Rota</h2>
 
-  <div class="info">
-    🛣️ Pedágio estimado automaticamente pela distância.<br>
-    (Opcional) Informe abaixo para substituir o valor.
-  </div>
+<input id="origem" placeholder="Endereço de origem">
+<input id="destino" placeholder="Endereço de destino">
+<input id="kmLitro" type="number" step="0.1" placeholder="Km por litro">
+<input id="precoGasolina" type="number" step="0.01" placeholder="Preço da gasolina">
 
-  <input id="pedagioManual" type="number" step="0.01" placeholder="Pedágio manual (opcional)">
+<div class="info">
+🛣️ Pedágio estimado automaticamente pela distância.<br>
+(Opcional) Informe abaixo para substituir o valor.
+</div>
 
-  <button onclick="calcular()">Calcular</button>
+<input id="pedagioManual" type="number" step="0.01" placeholder="Pedágio manual (opcional)">
 
-  <div id="resultado" class="resultado" style="display:none"></div>
-  <div id="mapa" class="mapa"></div>
+<button onclick="calcular()">Calcular</button>
+
+<div id="resultado" class="resultado" style="display:none"></div>
+<div id="mapa" class="mapa"></div>
 
 </div>
 
 <script>
-let map, directionsService, directionsRenderer, autocompleteService;
+let map,directionsService,directionsRenderer,autocompleteService;
+let deferredPrompt;
 
 const VALOR_PEDAGIO_POR_KM = 0.08;
 
-function initMap() {
-  map = new google.maps.Map(document.getElementById("mapa"), {
-    center: { lat: -23.55, lng: -46.63 },
-    zoom: 5
+/* GOOGLE MAPS */
+function initMap(){
+  map = new google.maps.Map(document.getElementById("mapa"),{
+    center:{lat:-23.55,lng:-46.63},
+    zoom:5
   });
 
   directionsService = new google.maps.DirectionsService();
-  directionsRenderer = new google.maps.DirectionsRenderer({ map });
+  directionsRenderer = new google.maps.DirectionsRenderer({map});
 
   autocompleteService = new google.maps.places.AutocompleteService();
 
@@ -151,25 +185,26 @@ function initMap() {
   configurarAutocomplete("destino");
 }
 
-function configurarAutocomplete(id) {
+/* AUTOCOMPLETE */
+function configurarAutocomplete(id){
   const input = document.getElementById(id);
   const lista = document.createElement("div");
 
-  lista.style.position = "absolute";
-  lista.style.background = "#1b1b1b";
-  lista.style.border = "1px solid #444";
-  lista.style.borderRadius = "6px";
-  lista.style.zIndex = "9999";
-  lista.style.display = "none";
+  lista.style.position="absolute";
+  lista.style.background="#1b1b1b";
+  lista.style.border="1px solid #444";
+  lista.style.borderRadius="6px";
+  lista.style.zIndex="9999";
+  lista.style.display="none";
 
   document.body.appendChild(lista);
 
-  input.addEventListener("input", () => {
-    const valor = input.value.trim();
+  input.addEventListener("input",()=>{
+    const valor=input.value.trim();
 
-    if (valor.length < 3) return;
+    if(valor.length < 3) return;
 
-    const rect = input.getBoundingClientRect();
+    const rect=input.getBoundingClientRect();
 
     lista.style.left = rect.left + "px";
     lista.style.top = rect.bottom + window.scrollY + "px";
@@ -177,89 +212,90 @@ function configurarAutocomplete(id) {
 
     autocompleteService.getPlacePredictions(
       {
-        input: valor,
-        componentRestrictions: { country: "br" }
+        input:valor,
+        componentRestrictions:{country:"br"}
       },
-      predictions => {
-        lista.innerHTML = "";
+      predictions=>{
+        lista.innerHTML="";
 
-        if (!predictions) return;
+        if(!predictions) return;
 
-        predictions.forEach(p => {
-          const item = document.createElement("div");
+        predictions.forEach(p=>{
+          const item=document.createElement("div");
 
-          item.textContent = p.description;
-          item.style.padding = "10px";
-          item.style.cursor = "pointer";
+          item.textContent=p.description;
+          item.style.padding="10px";
+          item.style.cursor="pointer";
 
-          item.onclick = () => {
-            input.value = p.description;
-            lista.style.display = "none";
+          item.onclick=()=>{
+            input.value=p.description;
+            lista.style.display="none";
           };
 
           lista.appendChild(item);
         });
 
-        lista.style.display = "block";
+        lista.style.display="block";
       }
     );
   });
 
-  document.addEventListener("click", e => {
-    if (e.target !== input) {
-      lista.style.display = "none";
+  document.addEventListener("click",(e)=>{
+    if(e.target !== input){
+      lista.style.display="none";
     }
   });
 }
 
-function calcular() {
-  const origem = document.getElementById("origem").value;
-  const destino = document.getElementById("destino").value;
-  const kmLitro = parseFloat(document.getElementById("kmLitro").value);
-  const preco = parseFloat(document.getElementById("precoGasolina").value);
-  const pedagioManual = parseFloat(document.getElementById("pedagioManual").value);
+/* CALCULAR */
+function calcular(){
+  const origem=document.getElementById("origem").value;
+  const destino=document.getElementById("destino").value;
+  const kmLitro=parseFloat(document.getElementById("kmLitro").value);
+  const preco=parseFloat(document.getElementById("precoGasolina").value);
+  const pedagioManual=parseFloat(document.getElementById("pedagioManual").value);
 
-  if (!origem || !destino) {
+  if(!origem || !destino){
     alert("Informe origem e destino.");
     return;
   }
 
-  if (isNaN(kmLitro) || kmLitro <= 0 || isNaN(preco) || preco <= 0) {
+  if(isNaN(kmLitro) || kmLitro<=0 || isNaN(preco) || preco<=0){
     alert("Preencha corretamente os dados.");
     return;
   }
 
   directionsService.route(
     {
-      origin: origem,
-      destination: destino,
-      travelMode: "DRIVING"
+      origin:origem,
+      destination:destino,
+      travelMode:"DRIVING"
     },
-    (res, status) => {
-      if (status !== "OK") {
+    (res,status)=>{
+      if(status !== "OK"){
         alert("Erro ao calcular rota.");
         return;
       }
 
       directionsRenderer.setDirections(res);
 
-      const rota = res.routes[0].legs[0];
-      const distanciaKm = rota.distance.value / 1000;
-      const duracao = rota.duration.text;
+      const rota=res.routes[0].legs[0];
+      const distanciaKm=rota.distance.value/1000;
+      const duracao=rota.duration.text;
 
-      const combustivel = (distanciaKm / kmLitro) * preco;
-      const pedagioEstimado = distanciaKm * VALOR_PEDAGIO_POR_KM;
+      const combustivel=(distanciaKm/kmLitro)*preco;
+      const pedagioEstimado=distanciaKm*VALOR_PEDAGIO_POR_KM;
 
-      const pedagioFinal =
-        !isNaN(pedagioManual) && pedagioManual > 0
-          ? pedagioManual
-          : pedagioEstimado;
+      const pedagioFinal=
+        !isNaN(pedagioManual) && pedagioManual>0
+        ? pedagioManual
+        : pedagioEstimado;
 
-      const total = combustivel + pedagioFinal;
+      const total=combustivel+pedagioFinal;
 
-      document.getElementById("resultado").style.display = "block";
+      document.getElementById("resultado").style.display="block";
 
-      document.getElementById("resultado").innerHTML = `
+      document.getElementById("resultado").innerHTML=`
         📏 Distância: ${distanciaKm.toFixed(2)} km<br>
         ⏱️ Tempo: ${duracao}<br>
         ⛽ Combustível: R$ ${combustivel.toFixed(2)}<br>
@@ -267,12 +303,12 @@ function calcular() {
         💰 Total: R$ ${total.toFixed(2)}<br><br>
 
         <div class="botoes-app">
-          <button onclick="abrirGoogleMaps('${origem}', '${destino}')">
-            📍 Abrir no Google Maps
+          <button onclick="abrirGoogleMaps('${origem}','${destino}')">
+          📍 Abrir no Google Maps
           </button>
 
           <button onclick="abrirWaze('${destino}')">
-            🚗 Abrir no Waze
+          🚗 Abrir no Waze
           </button>
         </div>
       `;
@@ -280,40 +316,57 @@ function calcular() {
   );
 }
 
-function abrirGoogleMaps(origem, destino) {
-  const url =
-    `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origem)}&destination=${encodeURIComponent(destino)}&travelmode=driving`;
-
-  window.open(url, "_blank");
+/* LINKS */
+function abrirGoogleMaps(origem,destino){
+  const url=`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origem)}&destination=${encodeURIComponent(destino)}&travelmode=driving`;
+  window.open(url,"_blank");
 }
 
-function abrirWaze(destino) {
-  const url =
-    `https://www.waze.com/ul?q=${encodeURIComponent(destino)}&navigate=yes`;
-
-  window.open(url, "_blank");
+function abrirWaze(destino){
+  const url=`https://www.waze.com/ul?q=${encodeURIComponent(destino)}&navigate=yes`;
+  window.open(url,"_blank");
 }
 
-function verificarInternet() {
-  const aviso = document.getElementById("offline-msg");
+/* INTERNET */
+function verificarInternet(){
+  const aviso=document.getElementById("offline-msg");
 
-  if (navigator.onLine) {
-    aviso.style.display = "none";
-  } else {
-    aviso.style.display = "block";
+  if(navigator.onLine){
+    aviso.style.display="none";
+  }else{
+    aviso.style.display="block";
   }
 }
 
-window.addEventListener("online", verificarInternet);
-window.addEventListener("offline", verificarInternet);
+window.addEventListener("online",verificarInternet);
+window.addEventListener("offline",verificarInternet);
 
 verificarInternet();
 
-// version: 2.0.0
+/* BOTÃO INSTALAR APP */
+window.addEventListener("beforeinstallprompt",(e)=>{
+  e.preventDefault();
+  deferredPrompt=e;
+  document.getElementById("btnInstalar").style.display="block";
+});
+
+document.getElementById("btnInstalar").addEventListener("click",async()=>{
+  if(!deferredPrompt) return;
+
+  deferredPrompt.prompt();
+
+  await deferredPrompt.userChoice;
+
+  deferredPrompt=null;
+
+  document.getElementById("btnInstalar").style.display="none";
+});
+
+// version: 2.2.0
 </script>
 
 <script>
-if ("serviceWorker" in navigator) {
+if("serviceWorker" in navigator){
   navigator.serviceWorker.register("./sw.js");
 }
 </script>
