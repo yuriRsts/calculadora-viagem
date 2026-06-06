@@ -144,8 +144,27 @@ button:hover{
 
 <h2>Calcular Rota</h2>
 
+<input id="nomeRota" placeholder="Nome da rota (opcional)">
+
 <input id="origem" placeholder="Endereço de origem">
+
+<div id="paradasContainer"></div>
+
+<button type="button" onclick="adicionarParada()">
+➕ Adicionar parada
+</button>
+
 <input id="destino" placeholder="Endereço de destino">
+
+<input id="passageiros" type="number" min="1" value="1" placeholder="Passageiros">
+
+<button type="button" onclick="salvarRota()">
+⭐ Salvar rota
+</button>
+
+<select id="rotasSalvas" onchange="carregarRota()">
+<option value="">Rotas salvas</option>
+</select>
 <input id="kmLitro" type="number" step="0.1" placeholder="Km por litro">
 <input id="precoGasolina" type="number" step="0.01" placeholder="Preço da gasolina">
 
@@ -165,6 +184,8 @@ button:hover{
 
 <script>
 let map,directionsService,directionsRenderer,autocompleteService;
+let ultimaRota = "";
+let contadorParadas = 0;
 let deferredPrompt;
 
 const VALOR_PEDAGIO_POR_KM = 0.08;
@@ -248,69 +269,181 @@ function configurarAutocomplete(id){
 }
 
 /* CALCULAR */
+function adicionarParada(){
+
+  contadorParadas++;
+
+  const div=document.createElement("div");
+
+  div.innerHTML=`
+    <input
+      id="parada${contadorParadas}"
+      class="parada"
+      placeholder="Parada ${contadorParadas}">
+  `;
+
+  document
+    .getElementById("paradasContainer")
+    .appendChild(div);
+
+  configurarAutocomplete(
+    `parada${contadorParadas}`
+  );
+}
 function calcular(){
+
   const origem=document.getElementById("origem").value;
   const destino=document.getElementById("destino").value;
-  const kmLitro=parseFloat(document.getElementById("kmLitro").value);
-  const preco=parseFloat(document.getElementById("precoGasolina").value);
-  const pedagioManual=parseFloat(document.getElementById("pedagioManual").value);
+
+  const kmLitro=parseFloat(
+    document.getElementById("kmLitro").value
+  );
+
+  const preco=parseFloat(
+    document.getElementById("precoGasolina").value
+  );
+
+  const pedagioManual=parseFloat(
+    document.getElementById("pedagioManual").value
+  );
+
+  const passageiros=parseInt(
+    document.getElementById("passageiros")?.value || 1
+  );
 
   if(!origem || !destino){
     alert("Informe origem e destino.");
     return;
   }
 
-  if(isNaN(kmLitro) || kmLitro<=0 || isNaN(preco) || preco<=0){
+  if(
+    isNaN(kmLitro) ||
+    kmLitro<=0 ||
+    isNaN(preco) ||
+    preco<=0
+  ){
     alert("Preencha corretamente os dados.");
     return;
   }
+
+  const waypoints=[];
+
+  document
+    .querySelectorAll(".parada")
+    .forEach(input=>{
+
+      if(input.value.trim()){
+
+        waypoints.push({
+          location:input.value.trim(),
+          stopover:true
+        });
+
+      }
+
+    });
 
   directionsService.route(
     {
       origin:origem,
       destination:destino,
+      waypoints:waypoints,
+      optimizeWaypoints:false,
       travelMode:"DRIVING"
     },
+
     (res,status)=>{
-      if(status !== "OK"){
+
+      if(status!=="OK"){
         alert("Erro ao calcular rota.");
         return;
       }
 
       directionsRenderer.setDirections(res);
 
-      const rota=res.routes[0].legs[0];
-      const distanciaKm=rota.distance.value/1000;
-      const duracao=rota.duration.text;
+      let distanciaKm=0;
+      let tempoSegundos=0;
 
-      const combustivel=(distanciaKm/kmLitro)*preco;
-      const pedagioEstimado=distanciaKm*VALOR_PEDAGIO_POR_KM;
+      res.routes[0].legs.forEach(leg=>{
+
+        distanciaKm+=leg.distance.value;
+        tempoSegundos+=leg.duration.value;
+
+      });
+
+      distanciaKm=distanciaKm/1000;
+
+      const horas=Math.floor(
+        tempoSegundos/3600
+      );
+
+      const minutos=Math.floor(
+        (tempoSegundos%3600)/60
+      );
+
+      const duracao=
+        horas+"h "+minutos+"min";
+
+      const combustivel=
+        (distanciaKm/kmLitro)*preco;
+
+      const pedagioEstimado=
+        distanciaKm*VALOR_PEDAGIO_POR_KM;
 
       const pedagioFinal=
-        !isNaN(pedagioManual) && pedagioManual>0
+        !isNaN(pedagioManual) &&
+        pedagioManual>0
         ? pedagioManual
         : pedagioEstimado;
 
-      const total=combustivel+pedagioFinal;
+      const total=
+        combustivel+pedagioFinal;
 
-      document.getElementById("resultado").style.display="block";
+      const custoPorPessoa=
+        total/passageiros;
 
-      document.getElementById("resultado").innerHTML=`
-        📏 Distância: ${distanciaKm.toFixed(2)} km<br>
-        ⏱️ Tempo: ${duracao}<br>
-        ⛽ Combustível: R$ ${combustivel.toFixed(2)}<br>
-        🛣️ Pedágio estimado: R$ ${pedagioFinal.toFixed(2)}<br>
-        💰 Total: R$ ${total.toFixed(2)}<br><br>
+      ultimaRota=`
+🚗 Calcular Rota
 
-        <div class="botoes-app">
-          <button onclick="abrirGoogleMaps('${origem}','${destino}')">
-          📍 Abrir no Google Maps
-          </button>
+📏 Distância: ${distanciaKm.toFixed(2)} km
+⏱️ Tempo: ${duracao}
+⛽ Combustível: R$ ${combustivel.toFixed(2)}
+🛣️ Pedágio: R$ ${pedagioFinal.toFixed(2)}
+💰 Total: R$ ${total.toFixed(2)}
+👥 Por pessoa: R$ ${custoPorPessoa.toFixed(2)}
+      `;
 
-          <button onclick="abrirWaze('${destino}')">
-          🚗 Abrir no Waze
-          </button>
-        </div>
+      document.getElementById(
+        "resultado"
+      ).style.display="block";
+
+      document.getElementById(
+        "resultado"
+      ).innerHTML=`
+
+📏 Distância: ${distanciaKm.toFixed(2)} km<br>
+⏱️ Tempo: ${duracao}<br>
+⛽ Combustível: R$ ${combustivel.toFixed(2)}<br>
+🛣️ Pedágio estimado: R$ ${pedagioFinal.toFixed(2)}<br>
+💰 Total: R$ ${total.toFixed(2)}<br>
+👥 Custo por pessoa: R$ ${custoPorPessoa.toFixed(2)}<br><br>
+
+<div class="botoes-app">
+
+<button onclick="abrirGoogleMaps('${origem}','${destino}')">
+📍 Abrir no Google Maps
+</button>
+
+<button onclick="abrirWaze('${destino}')">
+🚗 Abrir no Waze
+</button>
+
+<button onclick="compartilharResultado()">
+📤 Compartilhar
+</button>
+
+</div>
+
       `;
     }
   );
@@ -326,6 +459,173 @@ function abrirWaze(destino){
   const url=`https://www.waze.com/ul?q=${encodeURIComponent(destino)}&navigate=yes`;
   window.open(url,"_blank");
 }
+
+/* COMPARTILHAR */
+function compartilharResultado(){
+
+  if(!ultimaRota){
+    alert("Calcule uma rota primeiro.");
+    return;
+  }
+
+  if(navigator.share){
+
+    navigator.share({
+      title:"Calcular Rota",
+      text:ultimaRota
+    });
+
+  }else{
+
+    navigator.clipboard.writeText(
+      ultimaRota
+    );
+
+    alert(
+      "Resultado copiado para a área de transferência."
+    );
+
+  }
+}
+
+/* FAVORITOS */
+function salvarRota(){
+
+  const nome=
+    document.getElementById("nomeRota").value ||
+    "Rota sem nome";
+
+  const origem=
+    document.getElementById("origem").value;
+
+  const destino=
+    document.getElementById("destino").value;
+
+  if(!origem || !destino){
+    alert("Informe origem e destino.");
+    return;
+  }
+
+  const paradas=[];
+
+  document
+    .querySelectorAll(".parada")
+    .forEach(input=>{
+
+      if(input.value.trim()){
+        paradas.push(
+          input.value.trim()
+        );
+      }
+
+    });
+
+  const rota={
+    nome,
+    origem,
+    destino,
+    paradas
+  };
+
+  const rotas=
+    JSON.parse(
+      localStorage.getItem("rotas")
+    ) || [];
+
+  rotas.push(rota);
+
+  localStorage.setItem(
+    "rotas",
+    JSON.stringify(rotas)
+  );
+
+  carregarListaRotas();
+
+  alert("Rota salva.");
+}
+
+function carregarListaRotas(){
+
+  const select=
+    document.getElementById(
+      "rotasSalvas"
+    );
+
+  select.innerHTML=
+    '<option value="">Rotas salvas</option>';
+
+  const rotas=
+    JSON.parse(
+      localStorage.getItem("rotas")
+    ) || [];
+
+  rotas.forEach((rota,index)=>{
+
+    const option=
+      document.createElement(
+        "option"
+      );
+
+    option.value=index;
+    option.textContent=rota.nome;
+
+    select.appendChild(option);
+
+  });
+
+}
+
+function carregarRota(){
+
+  const index=
+    document.getElementById(
+      "rotasSalvas"
+    ).value;
+
+  if(index==="") return;
+
+  const rotas=
+    JSON.parse(
+      localStorage.getItem("rotas")
+    ) || [];
+
+  const rota=
+    rotas[index];
+
+  document.getElementById(
+    "nomeRota"
+  ).value=rota.nome;
+
+  document.getElementById(
+    "origem"
+  ).value=rota.origem;
+
+  document.getElementById(
+    "destino"
+  ).value=rota.destino;
+
+  document.getElementById(
+    "paradasContainer"
+  ).innerHTML="";
+
+  contadorParadas=0;
+
+  if(rota.paradas){
+
+    rota.paradas.forEach(parada=>{
+
+      adicionarParada();
+
+      document.getElementById(
+        `parada${contadorParadas}`
+      ).value=parada;
+
+    });
+
+  }
+}
+
+carregarListaRotas();
 
 /* INTERNET */
 function verificarInternet(){
@@ -362,7 +662,7 @@ document.getElementById("btnInstalar").addEventListener("click",async()=>{
   document.getElementById("btnInstalar").style.display="none";
 });
 
-// version: 2.2.0
+// version: 3.0.0
 </script>
 
 <script>
