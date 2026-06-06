@@ -273,18 +273,26 @@ function adicionarParada(){
 
   contadorParadas++;
 
-  const div=document.createElement("div");
+  const wrapper=document.createElement("div");
 
-  div.innerHTML=`
+  wrapper.className="parada-item";
+
+  wrapper.innerHTML=`
+
+    <div class="drag-handle">
+      ☰
+    </div>
+
     <input
       id="parada${contadorParadas}"
       class="parada"
       placeholder="Parada ${contadorParadas}">
+
   `;
 
   document
     .getElementById("paradasContainer")
-    .appendChild(div);
+    .appendChild(wrapper);
 
   configurarAutocomplete(
     `parada${contadorParadas}`
