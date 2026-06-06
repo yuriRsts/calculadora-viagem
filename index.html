@@ -99,7 +99,29 @@ button:hover{
 .botoes-app button{
   margin-top:8px;
 }
+.parada-item{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:10px;
+}
 
+.parada-item input{
+  flex:1;
+  margin-bottom:0;
+}
+
+.drag-handle{
+  width:40px;
+  height:46px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:#333;
+  border-radius:8px;
+  cursor:grab;
+  font-size:20px;
+}
 /* BOTÃO PREMIUM INSTALAR */
 .btn-install{
   display:none;
@@ -203,7 +225,15 @@ function initMap(){
   autocompleteService = new google.maps.places.AutocompleteService();
 
   configurarAutocomplete("origem");
-  configurarAutocomplete("destino");
+configurarAutocomplete("destino");
+
+new Sortable(
+  document.getElementById("paradasContainer"),
+  {
+    animation:150,
+    handle:".drag-handle"
+  }
+);
 }
 
 /* AUTOCOMPLETE */
@@ -279,7 +309,7 @@ function adicionarParada(){
 
   wrapper.innerHTML=`
 
-    <div class="drag-handle">
+    <div class="drag-handle" title="Arrastar">
       ☰
     </div>
 
@@ -288,7 +318,22 @@ function adicionarParada(){
       class="parada"
       placeholder="Parada ${contadorParadas}">
 
+    <button
+      type="button"
+      class="remover-parada"
+      title="Remover parada">
+      🗑
+    </button>
+
   `;
+
+  wrapper
+    .querySelector(".remover-parada")
+    .addEventListener("click",()=>{
+
+      wrapper.remove();
+
+    });
 
   document
     .getElementById("paradasContainer")
