@@ -269,12 +269,12 @@ button{
 <input id="nomeRota" placeholder="Nome da rota (opcional)">
 
 <input id="origem" placeholder="Endereço de origem">
+  
+<div id="paradasContainer"></div>
 
 <button type="button" onclick="adicionarParada()">
   📍 Adicionar local
-</button>
-  
-<div id="paradasContainer"></div>
+</button>  
 
 <button type="button" class="secondary" onclick="togglePassageiros()">
 👥 Dividir custo entre passageiros
@@ -476,9 +476,9 @@ function adicionarParada(){
 
     });
 
- document
+document
   .getElementById("paradasContainer")
-  .prepend(wrapper);
+  .appendChild(wrapper);
 
   configurarAutocomplete(
     `parada${contadorParadas}`
