@@ -81,13 +81,24 @@ button:active{
   transform:scale(0.98);
 }
   
-button.secondary{
+.secondary{
   background:#232a36;
-  box-shadow:none;
-  border:1px solid rgba(255,255,255,0.06);
+  color:#fff;
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px;
+  padding:10px;
+  font-size:13px;
+  cursor:pointer;
+  width:100%;
+  max-width:260px;
+  margin:8px auto;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:8px;
 }
 
-button.secondary:hover{
+.secondary:hover{
   background:#2b3444;
 }
   
@@ -236,7 +247,13 @@ button.secondary:hover{
   <span>📍</span> Adicionar local
 </button>
 
-<input id="passageiros" type="number" min="1" placeholder="Quantidade de Passageiros">
+<button type="button" class="secondary" onclick="togglePassageiros()">
+👥 Dividir custo entre passageiros
+</button>
+
+<div id="passageirosBox" style="display:none; margin-top:8px;">
+  <input id="passageiros" type="number" min="1" value="1" placeholder="Número de passageiros">
+</div>
 
 <button type="button" onclick="salvarRota()">
 ⭐ Salvar rota
@@ -756,7 +773,15 @@ function carregarRota(){
     document.getElementById(`parada${contadorParadas}`).value = parada;
   });
 }
+function togglePassageiros(){
+  const box = document.getElementById("passageirosBox");
 
+  if (box.style.display === "none") {
+    box.style.display = "block";
+  } else {
+    box.style.display = "none";
+  }
+}
 carregarListaRotas();
 
 /* INTERNET */
