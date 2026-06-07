@@ -356,15 +356,7 @@ button{
     <button onclick="togglePassageiros()">
     👥 Dividir custos
   </button>
-  
-<input id="nomeRota" placeholder="Nome da rota (opcional)">
-  
-  <select id="rotasSalvas" onchange="carregarRota()">
-    <option value="">📂 Rotas salvas</option>
-  </select>
-
-<div id="passageirosBox" style="display:none;">
-
+  <div id="passageirosBox" style="display:none;">
   <input
     id="passageiros"
     type="number"
@@ -373,6 +365,13 @@ button{
     placeholder="Quantidade de passageiros">
 
 </div>
+  
+<input id="nomeRota" placeholder="Nome da rota (opcional)">
+  
+  <select id="rotasSalvas" onchange="carregarRota()">
+    <option value="">📂 Rotas salvas</option>
+  </select>
+
   <button onclick="salvarRota()">
     ⭐ Salvar rota atual
   </button>
