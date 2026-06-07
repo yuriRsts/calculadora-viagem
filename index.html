@@ -283,7 +283,10 @@ function configurarAutocomplete(id){
   input.addEventListener("input",()=>{
     const valor=input.value.trim();
 
-    if(valor.length < 3) return;
+    if (valor.length < 3) {
+  lista.style.display = "none";
+  return;
+}
 
     const rect=input.getBoundingClientRect();
 
@@ -299,7 +302,10 @@ function configurarAutocomplete(id){
       predictions=>{
         lista.innerHTML="";
 
-        if(!predictions) return;
+        if (!predictions || predictions.length === 0) {
+  lista.style.display = "none";
+  return;
+}
 
         predictions.forEach(p=>{
           const item=document.createElement("div");
