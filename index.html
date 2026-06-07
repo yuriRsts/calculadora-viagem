@@ -148,38 +148,33 @@ button:active{
 
 .remover-parada{
   position:absolute;
-
   right:10px;
-  top:66%;
-
+  top:50%;
   transform:translateY(-50%);
-
-  width:24px;
-  height:24px;
-
+  width:26px !important;
+  height:26px;
   border:none;
+  background:#1f2329;
+  color:#aeb4bd;
+  font-size:16px;
   border-radius:50%;
-
-  background:#232a36;
-
-  color:#aab4c3;
-
-  font-size:14px;
-  font-weight:600;
-  line-height:24px;
-
   display:flex;
   align-items:center;
   justify-content:center;
-
   cursor:pointer;
 
-  padding:0;
-  margin:0;
-
-  transition:.2s;
+  /* remover animações */
+  transition:none;
 }
 
+.remover-parada:hover{
+  background:#1f2329;
+  color:#aeb4bd;
+  transform:translateY(-50%);
+}
+.remover-parada:active{
+  transform:translateY(-50%);
+}
 .parada-item input{
   width:100%;
   padding-right:42px;
@@ -226,11 +221,7 @@ button{
   max-width:260px;
   margin:0;
 }
-  
-.remover-parada:hover{
-  background:#2f3848;
-  color:#ffffff;
-}
+
 /* BOTÃO PREMIUM INSTALAR */
 .btn-install{
   display:none;
