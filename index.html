@@ -206,6 +206,9 @@ button:hover{
 </button>
 
 <select id="rotasSalvas" onchange="carregarRota()">
+<button type="button" onclick="apagarRota()">
+🗑 Apagar rota selecionada
+</button>
 <option value="">Rotas salvas</option>
 </select>
 <input id="kmLitro" type="number" step="0.1" placeholder="Km por litro">
@@ -605,136 +608,112 @@ function compartilharResultado(){
 /* FAVORITOS */
 function salvarRota(){
 
-  const nome=
+  const nome =
     document.getElementById("nomeRota").value ||
     "Rota sem nome";
 
-  const origem=
+  const origem =
     document.getElementById("origem").value;
 
-  if(!origem || !destino){
-    alert("Informe origem e destino.");
+  const paradas = [];
+
+  document.querySelectorAll(".parada").forEach(input => {
+    if (input.value.trim()) {
+      paradas.push(input.value.trim());
+    }
+  });
+
+  if (!origem || paradas.length === 0) {
+    alert("Informe origem e pelo menos uma parada.");
     return;
   }
 
-  const paradas=[];
-
-  document
-    .querySelectorAll(".parada")
-    .forEach(input=>{
-
-      if(input.value.trim()){
-        paradas.push(
-          input.value.trim()
-        );
-      }
-
-    });
-
-  const rota={
+  const rota = {
+    id: Date.now(), // 👈 IMPORTANTE para deletar depois
     nome,
     origem,
-    destino,
     paradas
   };
 
-  const rotas=
-    JSON.parse(
-      localStorage.getItem("rotas")
-    ) || [];
+  const rotas =
+    JSON.parse(localStorage.getItem("rotas")) || [];
 
   rotas.push(rota);
 
-  localStorage.setItem(
-    "rotas",
-    JSON.stringify(rotas)
-  );
+  localStorage.setItem("rotas", JSON.stringify(rotas));
 
   carregarListaRotas();
 
-  alert("Rota salva.");
+  alert("Rota salva com sucesso!");
 }
 
 function carregarListaRotas(){
 
-  const select=
-    document.getElementById(
-      "rotasSalvas"
-    );
+  const select = document.getElementById("rotasSalvas");
 
-  select.innerHTML=
-    '<option value="">Rotas salvas</option>';
+  select.innerHTML = '<option value="">Rotas salvas</option>';
 
-  const rotas=
-    JSON.parse(
-      localStorage.getItem("rotas")
-    ) || [];
+  const rotas =
+    JSON.parse(localStorage.getItem("rotas")) || [];
 
-  rotas.forEach((rota,index)=>{
+  rotas.forEach((rota, index) => {
 
-    const option=
-      document.createElement(
-        "option"
-      );
+    const option = document.createElement("option");
 
-    option.value=index;
-    option.textContent=rota.nome;
+    option.value = index;
+    option.textContent = rota.nome;
 
     select.appendChild(option);
 
   });
-
 }
 
 function carregarRota(){
 
-  const index=
-    document.getElementById(
-      "rotasSalvas"
-    ).value;
+  const index =
+    document.getElementById("rotasSalvas").value;
 
-  if(index==="") return;
+  if (index === "") return;
 
-  const rotas=
-    JSON.parse(
-      localStorage.getItem("rotas")
-    ) || [];
+  const rotas =
+    JSON.parse(localStorage.getItem("rotas")) || [];
 
-  const rota=
-    rotas[index];
+  const rota = rotas[index];
 
-  document.getElementById(
-    "nomeRota"
-  ).value=rota.nome;
+  document.getElementById("nomeRota").value = rota.nome;
+  document.getElementById("origem").value = rota.origem;
 
-  document.getElementById(
-    "origem"
-  ).value=rota.origem;
+  document.getElementById("paradasContainer").innerHTML = "";
+  contadorParadas = 0;
 
- const destino = locais[locais.length - 1];
-
-  document.getElementById(
-    "paradasContainer"
-  ).innerHTML="";
-
-  contadorParadas=0;
-
-  if(rota.paradas){
-
-    rota.paradas.forEach(parada=>{
-
-      adicionarParada();
-
-      document.getElementById(
-        `parada${contadorParadas}`
-      ).value=parada;
-
-    });
-
-  }
+  rota.paradas.forEach(parada => {
+    adicionarParada();
+    document.getElementById(`parada${contadorParadas}`).value = parada;
+  });
 }
 
 carregarListaRotas();
+  function apagarRota(){
+
+  const select = document.getElementById("rotasSalvas");
+  const index = select.value;
+
+  if (index === "") {
+    alert("Selecione uma rota para apagar.");
+    return;
+  }
+
+  let rotas =
+    JSON.parse(localStorage.getItem("rotas")) || [];
+
+  rotas.splice(index, 1);
+
+  localStorage.setItem("rotas", JSON.stringify(rotas));
+
+  carregarListaRotas();
+
+  alert("Rota apagada!");
+}
 
 /* INTERNET */
 function verificarInternet(){
@@ -771,7 +750,7 @@ document.getElementById("btnInstalar").addEventListener("click",async()=>{
   document.getElementById("btnInstalar").style.display="none";
 });
 
-// version: 3.2.0
+// version: 3.3.0
 </script>
 
 <script>
