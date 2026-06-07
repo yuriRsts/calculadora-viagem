@@ -193,12 +193,10 @@ button:hover{
 
 <input id="origem" placeholder="Endereço de origem">
 
-<input id="destino" placeholder="Endereço de destino">
-
 <div id="paradasContainer"></div>
 
 <button type="button" onclick="adicionarParada()">
-➕ Adicionar parada
+➕ Adicionar local
 </button>
 
 <input id="passageiros" type="number" min="1" placeholder="Quantidade de Passageiros">
@@ -248,8 +246,6 @@ function initMap(){
   autocompleteService = new google.maps.places.AutocompleteService();
 
   configurarAutocomplete("origem");
-configurarAutocomplete("destino");
-
 new Sortable(
   document.getElementById("paradasContainer"),
   {
@@ -339,7 +335,7 @@ function adicionarParada(){
     <input
       id="parada${contadorParadas}"
       class="parada"
-      placeholder="Parada ${contadorParadas}">
+      placeholder="Local ${contadorParadas}"
 
     <button
       type="button"
@@ -369,7 +365,6 @@ function adicionarParada(){
 function calcular(){
 
   const origem=document.getElementById("origem").value;
-  const destino=document.getElementById("destino").value;
 
   const kmLitro=parseFloat(
     document.getElementById("kmLitro").value
@@ -387,7 +382,26 @@ function calcular(){
     document.getElementById("passageiros")?.value || 1
   );
 
-  if(!origem || !destino){
+  const locais=[];
+
+document
+  .querySelectorAll(".parada")
+  .forEach(input=>{
+
+    if(input.value.trim()){
+      locais.push(input.value.trim());
+    }
+
+  });
+
+if(!origem || locais.length===0){
+
+  alert(
+    "Informe origem e pelo menos um local."
+  );
+
+  return;
+}
     alert("Informe origem e destino.");
     return;
   }
@@ -402,22 +416,16 @@ function calcular(){
     return;
   }
 
-  const waypoints=[];
+  const destino =
+  locais[locais.length-1];
 
-  document
-    .querySelectorAll(".parada")
-    .forEach(input=>{
-
-      if(input.value.trim()){
-
-        waypoints.push({
-          location:input.value.trim(),
-          stopover:true
-        });
-
-      }
-
-    });
+const waypoints =
+  locais
+    .slice(0,-1)
+    .map(local=>({
+      location:local,
+      stopover:true
+    }));
 
   directionsService.route(
     {
