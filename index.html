@@ -316,7 +316,31 @@ function configurarAutocomplete(id){
     }
   });
 }
+function atualizarDestinoVisual(){
 
+  const badges =
+    document.querySelectorAll(".destino-badge");
+
+  badges.forEach(badge=>{
+    badge.style.display="none";
+  });
+
+  const itens =
+    document.querySelectorAll(".parada-item");
+
+  if(itens.length){
+
+    const ultimo = itens[itens.length-1];
+
+    const badge =
+      ultimo.querySelector(".destino-badge");
+
+    if(badge){
+      badge.style.display="block";
+    }
+
+  }
+}
 /* CALCULAR */
 function adicionarParada(){
 
