@@ -189,6 +189,61 @@ button:active{
   transition:0.2s;
 }
 
+  .fab-add{
+  position:fixed;
+  bottom:90px;
+  right:20px;
+
+  width:56px;
+  height:56px;
+  border-radius:50%;
+
+  background:#1f5eff;
+  color:white;
+  border:none;
+
+  font-size:26px;
+  font-weight:bold;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  box-shadow:0 10px 25px rgba(31,94,255,0.35);
+
+  cursor:pointer;
+  z-index:9999;
+
+  transition:0.2s;
+}
+
+.fab-add:hover{
+  transform:scale(1.08);
+}
+
+  .bottom-bar{
+  position:fixed;
+  bottom:0;
+  left:0;
+  width:100%;
+
+  background:#161a22;
+  border-top:1px solid rgba(255,255,255,0.08);
+
+  padding:10px;
+
+  display:flex;
+  justify-content:center;
+
+  z-index:9998;
+}
+
+.bottom-bar button{
+  width:80%;
+  max-width:260px;
+  margin:0;
+}
+  
 .remover-parada:hover{
   transform:scale(1.05);
   background:#e63232;
@@ -255,9 +310,11 @@ button:active{
   <input id="passageiros" type="number" min="1" value="1" placeholder="Número de passageiros">
 </div>
 
-<button type="button" onclick="salvarRota()">
-⭐ Salvar rota
-</button>
+<div class="bottom-bar">
+  <button onclick="salvarRota()">
+    ⭐ Salvar rota
+  </button>
+</div>
   
 <select id="rotasSalvas" onchange="carregarRota()">
 <option value="">Rotas salvas</option>
