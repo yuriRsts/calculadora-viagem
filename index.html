@@ -476,9 +476,9 @@ function adicionarParada(){
 
     });
 
-  document
-    .getElementById("paradasContainer")
-    .appendChild(wrapper);
+ document
+  .getElementById("paradasContainer")
+  .prepend(wrapper);
 
   configurarAutocomplete(
     `parada${contadorParadas}`
