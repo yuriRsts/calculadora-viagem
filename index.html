@@ -335,7 +335,7 @@ function adicionarParada(){
     <input
       id="parada${contadorParadas}"
       class="parada"
-      placeholder="Local ${contadorParadas}"
+      placeholder="Local ${contadorParadas}">
 
     <button
       type="button"
@@ -352,6 +352,10 @@ function adicionarParada(){
 
       wrapper.remove();
 
+      if(typeof atualizarDestinoVisual==="function"){
+        atualizarDestinoVisual();
+      }
+
     });
 
   document
@@ -361,6 +365,10 @@ function adicionarParada(){
   configurarAutocomplete(
     `parada${contadorParadas}`
   );
+
+  if(typeof atualizarDestinoVisual==="function"){
+    atualizarDestinoVisual();
+  }
 }
 function calcular(){
 
