@@ -612,9 +612,6 @@ function salvarRota(){
   const origem=
     document.getElementById("origem").value;
 
-  const destino=
-    document.getElementById("destino").value;
-
   if(!origem || !destino){
     alert("Informe origem e destino.");
     return;
@@ -714,9 +711,7 @@ function carregarRota(){
     "origem"
   ).value=rota.origem;
 
-  document.getElementById(
-    "destino"
-  ).value=rota.destino;
+ const destino = locais[locais.length - 1];
 
   document.getElementById(
     "paradasContainer"
