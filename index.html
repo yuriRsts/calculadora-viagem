@@ -417,7 +417,30 @@ button{
   max-width:none;
   margin:6px 0;
 }
-  
+  .menu-rotas{
+  display:none;
+  margin-top:8px;
+  border-radius:16px;
+  overflow:hidden;
+  background:#08111a;
+  border:1px solid rgba(0,234,255,.25);
+}
+
+.item-rota{
+  padding:14px;
+  cursor:pointer;
+  color:#fff;
+  border-bottom:1px solid rgba(0,234,255,.08);
+  transition:.15s;
+}
+
+.item-rota:hover{
+  background:rgba(0,234,255,.08);
+}
+
+.item-rota:last-child{
+  border-bottom:none;
+}
 </style>
 </head>
 
@@ -483,9 +506,13 @@ button{
 
 </div>
   
-  <select id="rotasSalvas" onchange="carregarRota()">
-    <option value="">📂 Rotas salvas</option>
-  </select>
+<button onclick="toggleRotas()">
+📂 Rotas salvas
+</button>
+
+<div id="listaRotas" class="menu-rotas">
+  <!-- rotas inseridas via JS -->
+</div>
 <input id="nomeRota" placeholder="Nome da rota (opcional)">
   
   <button onclick="salvarRota()">
@@ -949,27 +976,7 @@ function carregarListaRotas(){
   });
 }
 
-  function apagarRota(){
-
-  const select = document.getElementById("rotasSalvas");
-  const index = select.value;
-
-  if (index === "") {
-    alert("Selecione uma rota para apagar.");
-    return;
-  }
-
-  let rotas =
-    JSON.parse(localStorage.getItem("rotas")) || [];
-
-  rotas.splice(index, 1);
-
-  localStorage.setItem("rotas", JSON.stringify(rotas));
-
-  carregarListaRotas();
-
-  alert("Rota apagada!");
-}
+let rotaSelecionada = null;
   
 function carregarRota(){
 
@@ -1032,7 +1039,110 @@ function verificarInternet(){
   }
 
 }
-  
+  function toggleRotas(){
+
+  const lista =
+    document.getElementById("listaRotas");
+
+  if(lista.style.display === "block"){
+    lista.style.display = "none";
+  }else{
+    carregarMenuRotas();
+    lista.style.display = "block";
+  }
+}
+  function carregarMenuRotas(){
+
+  const lista =
+    document.getElementById("listaRotas");
+
+  lista.innerHTML = "";
+
+  const rotas =
+    JSON.parse(localStorage.getItem("rotas")) || [];
+
+  if(rotas.length === 0){
+
+    lista.innerHTML =
+      '<div class="item-rota">Nenhuma rota salva</div>';
+
+    return;
+  }
+
+  rotas.forEach((rota,index)=>{
+
+    const item =
+      document.createElement("div");
+
+    item.className = "item-rota";
+
+    item.innerHTML =
+      `📍 ${rota.nome}`;
+
+    item.onclick = ()=>{
+
+      carregarRotaCustom(index);
+
+      lista.style.display = "none";
+    };
+
+    lista.appendChild(item);
+  });
+}
+  function carregarRotaCustom(index){
+rotaSelecionada = index;
+  const rotas =
+    JSON.parse(localStorage.getItem("rotas")) || [];
+
+  const rota = rotas[index];
+
+  if(!rota) return;
+
+  document.getElementById("nomeRota").value =
+    rota.nome;
+
+  document.getElementById("origem").value =
+    rota.origem;
+
+  document.getElementById("paradasContainer").innerHTML =
+    "";
+
+  contadorParadas = 0;
+
+  rota.paradas.forEach(parada=>{
+
+    adicionarParada();
+
+    document.getElementById(
+      `parada${contadorParadas}`
+    ).value = parada;
+  });
+}
+  function apagarRota(){
+
+  if(rotaSelecionada === null){
+
+    alert("Selecione uma rota.");
+
+    return;
+  }
+
+  let rotas =
+    JSON.parse(localStorage.getItem("rotas")) || [];
+
+  rotas.splice(rotaSelecionada,1);
+
+  localStorage.setItem(
+    "rotas",
+    JSON.stringify(rotas)
+  );
+
+  rotaSelecionada = null;
+
+  carregarMenuRotas();
+
+  alert("Rota apagada.");
+}
 window.addEventListener("online",verificarInternet);
 window.addEventListener("offline",verificarInternet);
 
