@@ -668,6 +668,28 @@ function carregarListaRotas(){
   });
 }
 
+  function apagarRota(){
+
+  const select = document.getElementById("rotasSalvas");
+  const index = select.value;
+
+  if (index === "") {
+    alert("Selecione uma rota para apagar.");
+    return;
+  }
+
+  let rotas =
+    JSON.parse(localStorage.getItem("rotas")) || [];
+
+  rotas.splice(index, 1);
+
+  localStorage.setItem("rotas", JSON.stringify(rotas));
+
+  carregarListaRotas();
+
+  alert("Rota apagada!");
+}
+  
 function carregarRota(){
 
   const index =
@@ -693,27 +715,6 @@ function carregarRota(){
 }
 
 carregarListaRotas();
-  function apagarRota(){
-
-  const select = document.getElementById("rotasSalvas");
-  const index = select.value;
-
-  if (index === "") {
-    alert("Selecione uma rota para apagar.");
-    return;
-  }
-
-  let rotas =
-    JSON.parse(localStorage.getItem("rotas")) || [];
-
-  rotas.splice(index, 1);
-
-  localStorage.setItem("rotas", JSON.stringify(rotas));
-
-  carregarListaRotas();
-
-  alert("Rota apagada!");
-}
 
 /* INTERNET */
 function verificarInternet(){
