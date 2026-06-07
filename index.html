@@ -143,20 +143,39 @@ button:active{
 }
 .parada-item{
   position:relative;
+  margin-bottom:10px;
 }
 
 .remover-parada{
   position:absolute;
-  top:6px;
-  right:6px;
 
-  width:28px !important;
-  height:28px;
+  right:10px;
+  top:50%;
 
-  z-index:10;
+  transform:translateY(-50%);
+
+  width:24px !important;
+  min-width:24px;
+  max-width:24px;
+
+  height:24px;
+
+  border:none;
+  background:transparent;
+
+  color:#8a8f98;
+
+  font-size:18px;
+  font-weight:bold;
+
+  cursor:pointer;
+
+  padding:0;
+  margin:0;
 }
 
 .parada-item input{
+  width:100%;
   padding-right:40px;
 }
 
@@ -203,8 +222,7 @@ button{
 }
   
 .remover-parada:hover{
-  transform:scale(1.05);
-  background:#e63232;
+  color:#ffffff;
 }
 /* BOTÃO PREMIUM INSTALAR */
 .btn-install{
@@ -512,12 +530,12 @@ function adicionarParada(){
       class="parada"
       placeholder="Local ${contadorParadas}">
 
-    <button
-      type="button"
-      class="remover-parada"
-      title="Remover parada">
-      🗑
-    </button>
+<button
+  type="button"
+  class="remover-parada"
+  title="Remover parada">
+  ✕
+</button>
 
   `;
 
