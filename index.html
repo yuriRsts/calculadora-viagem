@@ -227,6 +227,10 @@ button:active{
 
 <div class="container">
 
+<button class="fab-add" onclick="adicionarParada()">
+  ➕
+</button>
+
 <div id="offline-msg">
 ⚠️ Necessita conexão com internet para calcular rotas.
 </div>
@@ -242,10 +246,6 @@ button:active{
 <input id="origem" placeholder="Endereço de origem">
 
 <div id="paradasContainer"></div>
-
-<button type="button" onclick="adicionarParada()">
-  <span>📍</span> Adicionar local
-</button>
 
 <button type="button" class="secondary" onclick="togglePassageiros()">
 👥 Dividir custo entre passageiros
