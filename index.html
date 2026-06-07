@@ -274,14 +274,19 @@ button:active{
 
   transition:none;
 }
-  /* remover animações */
-  transition:none;
-}
+
 .remover-parada:hover{
   background:#1a2430;
 }
 .remover-parada:active{
   transform:translateY(-50%);
+}
+  .remover-parada,
+.remover-parada:hover,
+.remover-parada:active{
+  transition:none !important;
+  transform:none !important;
+  box-shadow:none !important;
 }
 .parada-item input{
   width:100%;
