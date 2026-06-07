@@ -154,29 +154,35 @@ button:active{
 
   transform:translateY(-50%);
 
-  width:24px !important;
-  min-width:24px;
-  max-width:24px;
-
+  width:24px;
   height:24px;
 
   border:none;
-  background:transparent;
+  border-radius:50%;
 
-  color:#8a8f98;
+  background:#232a36;
 
-  font-size:18px;
-  font-weight:bold;
+  color:#aab4c3;
+
+  font-size:14px;
+  font-weight:600;
+  line-height:24px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
 
   cursor:pointer;
 
   padding:0;
   margin:0;
+
+  transition:.2s;
 }
 
 .parada-item input{
   width:100%;
-  padding-right:40px;
+  padding-right:42px;
 }
 
 .drag-handle{
@@ -222,6 +228,7 @@ button{
 }
   
 .remover-parada:hover{
+  background:#2f3848;
   color:#ffffff;
 }
 /* BOTÃO PREMIUM INSTALAR */
