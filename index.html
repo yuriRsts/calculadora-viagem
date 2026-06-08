@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<div class="social-proof">
+  🚗 Mais de <span id="contadorRotas">...</span> rotas calculadas
+</div>
+
 <title>Calcular Rota</title>
 
 <link rel="manifest" href="manifest.json">
@@ -17,6 +21,24 @@
   font-family:Arial,sans-serif;
 }
 
+  .social-proof{
+
+  text-align:center;
+
+  margin-bottom:12px;
+
+  color:#00eaff;
+
+  font-size:13px;
+
+  font-weight:600;
+
+  letter-spacing:.3px;
+
+  text-shadow:
+    0 0 8px rgba(0,234,255,.35);
+}
+  
 body{
   margin:0;
   min-height:100vh;
@@ -1176,8 +1198,81 @@ document.getElementById("btnInstalar").addEventListener("click",async()=>{
 
 // version: 3.4.0
 </script>
+<script type="module">
 
-<script>
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+
+import {
+  getDatabase,
+  ref,
+  get
+}
+from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+
+const firebaseConfig = {
+
+  apiKey: "AIzaSyDtLiFgX4cdTASxWxc8z5XQwyQdGPWI7GU",
+
+  authDomain:
+  "calcular-rota-bc748.firebaseapp.com",
+
+  databaseURL:
+  "https://calcular-rota-oficial-default-rtdb.firebaseio.com/",
+
+  projectId:
+  "calcular-rota-bc748",
+
+  storageBucket:
+  "calcular-rota-bc748.firebasestorage.app",
+
+  messagingSenderId:
+  "656819614184",
+
+  appId:
+  "1:656819614184:web:2e74e0510b7db4c050345d"
+
+};
+
+const app =
+  initializeApp(firebaseConfig);
+
+const db =
+  getDatabase(app);
+
+async function carregarContadorRotas(){
+
+  try{
+
+    const snapshot =
+      await get(ref(db,"rotas"));
+
+    if(snapshot.exists()){
+
+      document.getElementById(
+        "contadorRotas"
+      ).textContent =
+        snapshot.val()
+        .toLocaleString("pt-BR");
+
+    }
+
+  }catch(e){
+
+    console.error(
+      "Erro Firebase:",
+      e
+    );
+
+  }
+
+}
+
+carregarContadorRotas();
+
+</script>
+<script> 
+  
 if("serviceWorker" in navigator){
   navigator.serviceWorker.register("./sw.js");
 }
