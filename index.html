@@ -746,9 +746,13 @@ function calcular(){
     document.getElementById("precoGasolina").value
   );
 
-  const pedagioManual=parseFloat(
-    document.getElementById("pedagioManual").value
-  );
+ const valorPedagio =
+  document.getElementById("pedagioManual").value;
+
+console.log("Valor digitado:", valorPedagio);
+
+const pedagioManual =
+  parseFloat(valorPedagio);
 
   const passageiros=parseInt(
     document.getElementById("passageiros")?.value || 1
