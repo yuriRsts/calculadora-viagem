@@ -814,7 +814,14 @@ const waypoints =
       }
 
       directionsRenderer.setDirections(res);
+if(podeContabilizar()){
 
+  incrementarContadorRotas();
+
+}
+      setTimeout(()=>{
+  carregarContadorRotas();
+},500);
       let distanciaKm=0;
       let tempoSegundos=0;
 
@@ -1172,6 +1179,66 @@ rotaSelecionada = index;
 
   alert("Rota apagada.");
 }
+  async function incrementarContadorRotas(){
+
+  try{
+
+    const snapshot =
+      await get(ref(db,"rotas"));
+
+    if(snapshot.exists()){
+
+      const total =
+        snapshot.val() + 1;
+
+      await set(
+        ref(db,"rotas"),
+        total
+      );
+
+    }
+
+  }catch(e){
+
+    console.error(
+      "Erro ao atualizar contador:",
+      e
+    );
+
+  }
+
+}
+  function podeContabilizar(){
+
+  const agora = Date.now();
+
+  let historico =
+    JSON.parse(
+      localStorage.getItem(
+        "historicoRotas"
+      )
+    ) || [];
+
+  historico = historico.filter(
+    tempo => agora - tempo < 60000
+  );
+
+  if(historico.length >= 10){
+
+    return false;
+
+  }
+
+  historico.push(agora);
+
+  localStorage.setItem(
+    "historicoRotas",
+    JSON.stringify(historico)
+  );
+
+  return true;
+}
+  
 window.addEventListener("online",verificarInternet);
 window.addEventListener("offline",verificarInternet);
 
@@ -1239,7 +1306,11 @@ const app =
 
 const db =
   getDatabase(app);
-
+  
+window.db = db;
+window.ref = ref;
+window.get = get;
+window.set = set;
 async function carregarContadorRotas(){
 
   try{
